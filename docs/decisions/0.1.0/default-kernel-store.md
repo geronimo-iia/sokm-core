@@ -1,4 +1,4 @@
-# Decision: AosKernelStore only — SoaKernelStore dropped
+# Decision: DefaultKernelStore only — SoaKernelStore dropped
 
 ## Problem
 
@@ -8,7 +8,7 @@ Array-of-Structs vs Struct-of-Arrays layout is a classic performance trade-off.
 
 ## Decision
 
-Ship only `AosKernelStore`. Remove `SoaKernelStore`.
+Ship only `DefaultKernelStore`. Remove `SoaKernelStore`.
 
 ## Why
 

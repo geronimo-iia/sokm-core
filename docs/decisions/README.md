@@ -17,7 +17,7 @@ Decisions for upper layers (memory, store, encoder, MCP) are out of scope for th
 
 | Decision | Summary |
 | -------- | ------- |
-| [aos-kernel-store](0.1.0/aos-kernel-store.md) | AosKernelStore only — SoaKernelStore was 1.07× faster, within noise; bottleneck is FPU not layout |
+| [default-kernel-store](0.1.0/default-kernel-store.md) | DefaultKernelStore only — SoaKernelStore was 1.07× faster, within noise; bottleneck is FPU not layout |
 
 ### Algorithm Fidelity
 

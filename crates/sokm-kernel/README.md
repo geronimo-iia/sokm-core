@@ -27,9 +27,6 @@ Each input vector is scored against every live kernel using a Gaussian (or compa
 - **Class inheritance** — unlabelled kernels inherit class from co-activated labelled neighbours [Hoya §4.3]
 - **`KernelGraph`** — convenience wrapper combining all of the above into a single `tick()` call
 
-The `Aos` prefix (e.g. `AosKernelGraph`, `AosKernelStore`) denotes
-Array-of-Structs kernel storage — the only provided implementation.
-
 Optional SIMD path via `simd` feature (`wide` crate, `f64x4`) for `compute_scores`
 in `tick` — ~2.35× at 358d/10k kernels.
 
@@ -46,9 +43,9 @@ sokm-kernel = { version = "0.1", features = ["simd"] }
 ```rust
 use sokm::SokmConfig;
 use sokm::HashEdgeStore;
-use sokm_kernel::{AosKernelGraph, KernelConfig, KernelGraph};
+use sokm_kernel::{DefaultKernelGraph, KernelConfig, KernelGraph};
 
-let mut graph: AosKernelGraph = KernelGraph::new(
+let mut graph: DefaultKernelGraph = KernelGraph::new(
     HashEdgeStore::default(),
     &KernelConfig::default(),
 );
@@ -135,7 +132,7 @@ sokm-memory       ← persistent episodic memory store
 
 **Why separate from `sokm`:** testable in isolation; `sokm-multimodal` owns two `KernelGraph` instances and one cross-modal edge store independently; merging would force emotion and memory to depend on link mechanics they don't need directly.
 
-**`AosKernelStore` only:** Array-of-Structs is the sole provided kernel storage. Struct-of-Arrays was considered for SIMD over all centroids simultaneously but rejected: at typical kernel counts (< 50k) AoS wins on branch predictability and simpler grow/compact code. SIMD is applied per-activation via the `simd` feature, not across the whole store.
+**`DefaultKernelStore` only:** Array-of-Structs is the sole provided kernel storage. Struct-of-Arrays was considered for SIMD over all centroids simultaneously but rejected: at typical kernel counts (< 50k) AoS wins on branch predictability and simpler grow/compact code. SIMD is applied per-activation via the `simd` feature, not across the whole store.
 
 **`KernelGraph` takes the edge store by move:** callers choose `HashEdgeStore` for tests or `SparseEdgeStore` for production without changing `KernelGraph` code. The graph owns the store — no shared references across tick boundaries.
 
@@ -150,7 +147,7 @@ sokm-memory       ← persistent episodic memory store
 | `TickReport` | `grew: bool`, `best: Option<usize>`, `activated: Vec<(usize, f64)>` |
 | `KernelGraph::propagate_soft(x, cfg)` | Score all kernels then spread activation through edges |
 | `KernelGraph::best_match(x, cfg)` | Return kernel index with highest propagated score |
-| `AosKernelStore::push(centroid, sigma, label)` | Add kernel manually (bypasses growth rule) |
+| `DefaultKernelStore::push(centroid, sigma, label)` | Add kernel manually (bypasses growth rule) |
 | `should_grow_direct(store, x, cfg)` | Growth check without edge access — for ECS callers |
 | `compute_scores(store, x)` | Raw activation scores for all live kernels |
 | `Stm::update(idx, store)` / `Stm::blend_output(x, store, alpha)` | STM: record recent activations; blend centroid mean into output |
