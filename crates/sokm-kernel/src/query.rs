@@ -27,6 +27,11 @@ pub fn best_match<S: EdgeStore<usize>>(
     let spread = propagate(edges, &fired, sokm_cfg);
     let mut prop = vec![0.0f64; store.len()];
     for (idx, score) in spread {
+        debug_assert!(
+            idx < prop.len(),
+            "best_match: edge references kernel idx={idx} outside store (len={})",
+            prop.len()
+        );
         if idx < prop.len() {
             prop[idx] += score;
         }
