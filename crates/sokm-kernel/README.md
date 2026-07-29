@@ -9,8 +9,7 @@ Kernel unit layer for SOKM (Self-Organizing Kernel Memory).
 Implements kernel units, activation functions, one-pass growth, STM, and class
 inheritance from Tetsuya Hoya (2005), *Artificial Mind System: Kernel Memory Approach*.
 
-Builds on [`sokm`](https://github.com/geronimo-iia/sokm-core/tree/main/crates/sokm) (link layer). For multi-modal associative memory,
-see [`sokm-rs`](https://github.com/geronimo-iia/sokm-rs).
+Builds on [`sokm`](https://github.com/geronimo-iia/sokm-core/tree/main/crates/sokm) (link layer).
 
 ## What it does
 
@@ -95,9 +94,9 @@ clusters, then classifies novel inputs by nearest kernel.
 ```
 sokm              ← link layer                        [sokm-core]
 sokm-kernel       ← kernel units, growth, STM (this crate) [sokm-core]
-sokm-multimodal   ← Gestalt K³ cross-modal memory    [sokm-rs]
-sokm-emotion      ← emotional state layer             [sokm-rs]
-sokm-memory       ← persistent episodic memory store  [sokm-rs]
+sokm-multimodal   ← Gestalt K³ cross-modal memory
+sokm-emotion      ← emotional state layer
+sokm-memory       ← persistent episodic memory store
 ```
 
 ## Design notes

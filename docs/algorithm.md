@@ -3,7 +3,7 @@
 Core algorithm for the Self-Organizing Kernel Machine, as implemented in `sokm` and `sokm-kernel`.
 Equations reference Hoya (2005) — *Artificial Mind System: Kernel Memory Approach*, Springer.
 
-Upper-layer algorithms (emotion, multimodal, episodic memory) are documented in [sokm-rs](https://github.com/geronimo-iia/sokm-rs).
+Upper-layer algorithms (emotion, multimodal, episodic memory) are out of scope for this crate.
 
 ## 1. Kernel Activation [Eq 3.8]
 

@@ -8,4 +8,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial extraction of `sokm` and `sokm-kernel` from `sokm-rs`
+- Initial release of `sokm` and `sokm-kernel`
