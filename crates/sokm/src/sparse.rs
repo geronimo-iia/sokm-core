@@ -8,6 +8,13 @@ use std::collections::HashMap;
 /// duplicate pairs accumulate their weights). Use `grow` to expand capacity.
 /// `reindex` remaps node indices and drops edges where either endpoint maps to None.
 /// `pending_count` returns the number of edges buffered but not yet in CSR.
+///
+/// # INVARIANT: CSR and pending are mutually exclusive per edge
+/// An edge key is present in at most one of `csr_index` or `pending` at any time.
+/// `set_weight` writes to CSR if the key already exists there, otherwise to pending.
+/// `apply_increments` follows the same rule.
+/// `compact()` merges pending into CSR and clears pending — after compact, pending is empty.
+/// Breaking this invariant causes `get_weight` to double-count (it sums both).
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SparseEdgeStore {
@@ -232,6 +239,13 @@ impl EdgeStore<usize> for SparseEdgeStore {
         let key = canonical(a, b);
         let csr = self.csr_weight(key);
         let pending = self.pending.get(&key).copied().unwrap_or(0.0);
+        // Invariant: a key is never non-zero in both CSR and pending simultaneously.
+        // apply_increments routes to CSR when the key exists in csr_index, pending otherwise.
+        // compact() merges pending into CSR and clears pending. set_weight clears pending for the key.
+        debug_assert!(
+            csr == 0.0 || pending == 0.0,
+            "get_weight: key {key:?} non-zero in both CSR ({csr}) and pending ({pending})"
+        );
         if pending > 0.0 { csr + pending } else { csr }
     }
 
@@ -698,6 +712,28 @@ mod tests {
         s.grow(8);
         s.set_weight(4, 7, 0.9);
         assert!((s.get_weight(4, 7) - 0.9).abs() < 1e-10);
+    }
+
+    #[test]
+    fn get_weight_csr_and_pending_are_disjoint_per_key() {
+        let mut s = SparseEdgeStore::new(4);
+
+        // Edge (0,1): put into CSR via set_weight + compact
+        s.set_weight(0, 1, 0.5);
+        s.compact(); // flushes any pending state; (0,1) is now in csr_index
+
+        // Edge (2,3): new key, not in csr_index — apply_increments routes to pending
+        s.apply_increments(&[(2usize, 3, 0.3)]);
+        assert_eq!(s.pending_count(), 1); // (2,3) is in pending
+
+        // (0,1) also gets an increment — routes to CSR (key exists in csr_index)
+        s.apply_increments(&[(0usize, 1, 0.1)]);
+        assert_eq!(s.pending_count(), 1); // still only (2,3) in pending
+
+        // get_weight reads from the correct path for each
+        assert!((s.get_weight(0, 1) - 0.6).abs() < 1e-10); // CSR: 0.5 + 0.1
+        assert!((s.get_weight(2, 3) - 0.3).abs() < 1e-10); // pending: 0.3
+        // debug_assert in get_weight must not fire for either key
     }
 
     #[test]
