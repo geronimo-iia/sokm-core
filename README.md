@@ -7,6 +7,10 @@ Core primitives for the SOKM (Self-Organizing Kernel Memory) system.
 - **[`sokm`](crates/sokm/)** — Hebbian link mechanics: decay, strengthen, prune, propagate
 - **[`sokm-kernel`](crates/sokm-kernel/)** — Kernel unit layer: activation, one-pass growth, STM, KernelGraph
 
+## Documentation
+
+- [Algorithm reference](docs/algorithm.md) — equations, parameters, tick() loop order (Hoya 2005)
+
 ## Usage
 
 ```toml
