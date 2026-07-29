@@ -4,11 +4,10 @@
 [![Docs.rs](https://docs.rs/sokm/badge.svg)](https://docs.rs/sokm)
 [![License](https://img.shields.io/crates/l/sokm.svg)](LICENSE-MIT)
 
-Hebbian link mechanics for SOKM (Self-Organizing Kernel Memory).
+Hebbian link mechanics for SOKM (Self-Organizing Kernel Memory) — decay, strengthen, prune, propagate over a sparse weighted graph.
 
 Implements the link-weight layer from Tetsuya Hoya (2005),
-*Artificial Mind System: Kernel Memory Approach* — decay, strengthen, prune,
-and propagate over a sparse weighted graph.
+*Artificial Mind System: Kernel Memory Approach*.
 
 This crate is the foundation layer. For kernel units and growth, see
 [`sokm-kernel`](https://github.com/geronimo-iia/sokm-core/tree/main/crates/sokm-kernel).
@@ -17,9 +16,9 @@ This crate is the foundation layer. For kernel units and growth, see
 
 - **Decay** — all edge weights decay by `exp(-ξ)` each tick [Hoya Eq. 4.1]
 - **Strengthen** — co-activated node pairs reinforce their edge [Hoya Eqs. 4.6–4.7]
-- **Prune** — removes edges below a weight floor or inactive beyond `p1` ticks
+- **Prune** — removes edges below a weight floor or inactive beyond `p1` ticks [Hoya §4]
 - **Propagate** — spreads activation through the graph, binary or soft [Hoya Eqs. 4.3–4.4]
-- **`tick`** — runs all four steps in one call; `DecayMode::Skip` bypasses the decay step (use for bulk import to avoid distorting edge weights)
+- **`tick`** — runs all four steps in one call; `DecayMode::Skip` bypasses decay (use for bulk import)
 
 ## Usage
 
@@ -123,6 +122,10 @@ sokm-memory       ← persistent episodic memory store
 **Two backends, not one:** `HashEdgeStore` gives predictable iteration order — useful in unit tests. `SparseEdgeStore` uses a CSR layout for cache-friendly traversal on large graphs. Both satisfy the `EdgeStore` + `Reindex` traits so callers are backend-agnostic. A single `HashMap<(N,N), f64>` was considered but rejected: poor cache behavior at scale and no path to CSR.
 
 **`Reindex` is optional:** backends that never survive compaction (tests, ephemeral graphs) implement only `EdgeStore`. Only production backends need `Reindex`.
+
+## MSRV
+
+Rust 1.95 (stable). No nightly required.
 
 ## Reference
 

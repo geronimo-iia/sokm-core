@@ -6,7 +6,7 @@ pub struct KernelUnit {
     pub centroid: Vec<f64>,
     /// Bandwidth σ_i > 0.
     pub sigma: f64,
-    /// Class label η_i. None = unlabelled (η = ∅). [Hoya §4.3] [DIRECT]
+    /// Class label η_i. None = unlabelled (η = ∅). [Hoya §4.3]
     pub class: Option<u32>,
     /// Excitation count ε_i — incremented each time this kernel activates.
     pub excitation: u64,

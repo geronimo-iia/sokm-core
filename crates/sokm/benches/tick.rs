@@ -1,7 +1,7 @@
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use sokm::{
-    EdgeStore, SokmConfig, SparseEdgeStore, decay, propagate, propagate_soft, prune, strengthen,
-    tick,
+    DecayMode, EdgeStore, SokmConfig, SparseEdgeStore, decay, propagate, propagate_soft, prune,
+    strengthen, tick,
 };
 
 fn setup_store(nodes: usize, edges_per_node: usize) -> SparseEdgeStore {
@@ -31,6 +31,7 @@ fn bench_tick(c: &mut Criterion) {
                     black_box(&active),
                     black_box(1),
                     black_box(&cfg),
+                    DecayMode::Apply,
                 )
             },
             criterion::BatchSize::SmallInput,

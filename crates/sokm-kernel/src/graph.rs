@@ -18,7 +18,7 @@ pub struct KernelTickReport {
     pub sokm: SokmReport,
     /// Kernels newly marked extinct this tick. [Hoya pp. 80–99, Rule 3]
     pub newly_extinct: usize,
-    /// Unlabelled kernels that inherited a class label this tick. [Hoya §4.3] [DIRECT]
+    /// Unlabelled kernels that inherited a class label this tick. [Hoya §4.3]
     pub newly_labelled: usize,
     /// Gaussian scores for all kernels this tick. Vec moved out of tick on every call;
     /// ignore if unused — no allocation cost if caller drops immediately.
@@ -329,7 +329,7 @@ impl<S: EdgeStore<usize>, K: KernelStore> KernelGraph<S, K> {
                 .unwrap_or(0)
         };
         self.kernels.incr_excitation(activated_kernel);
-        // Record activation tick for Rule 3 extinction check. [Hoya pp. 80–99] [DIRECT]
+        // Record activation tick for Rule 3 extinction check. [Hoya pp. 80–99]
         self.kernels.touch(activated_kernel, current_tick);
 
         // Step 6: update STM
@@ -368,7 +368,7 @@ impl<S: EdgeStore<usize>, K: KernelStore> KernelGraph<S, K> {
             decay,
         );
 
-        // Step 10: label inheritance [Hoya §4.3] [DIRECT]
+        // Step 10: label inheritance [Hoya §4.3]
         // Co-activation = direct (scores[i] > 0) OR propagated (prop_scratch[i] > 0).
         // Must run before prop_scratch zero-pass — propagated scores still live here.
         let mut newly_labelled = 0usize;
@@ -457,7 +457,7 @@ impl<S: EdgeStore<usize>, K: KernelStore> KernelGraph<S, K> {
             .count()
     }
 
-    /// Like [`compact`], but also returns the old→new index map for external reindexing.
+    /// Like [`Self::compact`], but also returns the old→new index map for external reindexing.
     /// Performs the full internal reindex (edges, STM, coactivation_counts, prop scratch)
     /// then returns the map. The caller uses it to reindex external structures.
     ///

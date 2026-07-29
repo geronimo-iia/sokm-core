@@ -6,7 +6,7 @@ use crate::store::KernelStore;
 
 /// Index and combined score (direct + propagated) of the best-matching kernel.
 /// Returns None if store is empty.
-/// [Hoya Testing Algorithm steps 1–3, pp. 80–99] [DIRECT]
+/// [Hoya Testing Algorithm steps 1–3, pp. 80–99]
 pub fn best_match<S: EdgeStore<usize>>(
     store: &impl KernelStore,
     edges: &S,
@@ -45,7 +45,7 @@ pub fn best_match<S: EdgeStore<usize>>(
 
 /// Class label η̂ of the best-matching kernel.
 /// Returns None if store is empty or if best match is unlabelled.
-/// [Hoya Testing Algorithm step 4, pp. 80–99] [DIRECT]
+/// [Hoya Testing Algorithm step 4, pp. 80–99]
 pub fn predict<S: EdgeStore<usize>>(
     store: &impl KernelStore,
     edges: &S,

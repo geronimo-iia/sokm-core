@@ -10,7 +10,7 @@ pub trait KernelStore {
     /// Centroid slice for kernel i: length d.
     fn centroid(&self, i: usize) -> &[f64];
     fn sigma(&self, i: usize) -> f64;
-    /// Class label for kernel i. None if unlabelled (η = ∅). [Hoya §4.3] [DIRECT]
+    /// Class label for kernel i. None if unlabelled (η = ∅). [Hoya §4.3]
     fn class_opt(&self, i: usize) -> Option<u32>;
 
     /// Assign class label to a previously unlabelled kernel. No-op if already labelled.
@@ -27,7 +27,7 @@ pub trait KernelStore {
 
     /// Logical tick of the last activation of kernel i.
     /// Returns 0 for a kernel that has never been activated.
-    /// [Hoya pp. 80–99, Rule 3 inactivity check] [DIRECT]
+    /// [Hoya pp. 80–99, Rule 3 inactivity check]
     fn last_activated(&self, i: usize) -> u64;
 
     /// Record that kernel i was activated at `tick`.
@@ -43,7 +43,7 @@ pub trait KernelStore {
     fn min_excitation_idx(&self) -> Option<usize>;
 
     /// Mark kernel i as extinct. Skipped in all activation and growth computations.
-    /// [Hoya pp. 80–99, Rule 3] [DIRECT]
+    /// [Hoya pp. 80–99, Rule 3]
     fn mark_extinct(&mut self, i: usize);
 
     /// True if kernel i has been marked extinct.

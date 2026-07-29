@@ -4,22 +4,28 @@
 [![Docs.rs](https://docs.rs/sokm-kernel/badge.svg)](https://docs.rs/sokm-kernel)
 [![License](https://img.shields.io/crates/l/sokm-kernel.svg)](LICENSE-MIT)
 
-Kernel unit layer for SOKM (Self-Organizing Kernel Memory).
+Kernel unit layer for SOKM — activation scoring, one-pass growth, short-term memory, and class inheritance.
 
 Implements kernel units, activation functions, one-pass growth, STM, and class
 inheritance from Tetsuya Hoya (2005), *Artificial Mind System: Kernel Memory Approach*.
 
 Builds on [`sokm`](https://github.com/geronimo-iia/sokm-core/tree/main/crates/sokm) (link layer).
 
+## Background
+
+Each input vector is scored against every live kernel using a Gaussian (or compact) radial basis function. If no kernel exceeds the excitation threshold `θ_k`, a new kernel is grown at the input location. Co-activated same-class kernels strengthen their Hebbian links via `sokm`; the graph evolves tick by tick without batch training.
+
+`KernelGraph` combines kernel storage, activation, growth, STM, and propagation into one `tick()` call — the correct Hoya check including both direct and propagated activation.
+
 ## What it does
 
 - **Kernel units** — centroid `c`, bandwidth `σ`, class label `η`, excitation counter
-- **Gaussian / compact activation** [Hoya Eqs. 3.8, 3.10]
-- **One-pass growth** — new kernel added when no existing kernel is excited [Hoya §3.4]
+- **Gaussian / compact activation** — radial basis scoring, result ∈ (0,1] [Hoya Eqs. 3.8, 3.10]
+- **One-pass growth** — new kernel grown only when no existing kernel is excited [Hoya §3.4]
 - **Early-exit growth check** — O(1) on familiar input, O(N·D) worst case
 - **STM** — short-term memory with min-ε eviction [Hoya p. 164, Eq. 10.5]
 - **Class inheritance** — unlabelled kernels inherit class from co-activated labelled neighbours [Hoya §4.3]
-- **`KernelGraph`** — convenience wrapper combining all of the above
+- **`KernelGraph`** — convenience wrapper combining all of the above into a single `tick()` call
 
 The `Aos` prefix (e.g. `AosKernelGraph`, `AosKernelStore`) denotes
 Array-of-Structs kernel storage — the only provided implementation.
@@ -134,6 +140,24 @@ sokm-memory       ← persistent episodic memory store
 **`KernelGraph` takes the edge store by move:** callers choose `HashEdgeStore` for tests or `SparseEdgeStore` for production without changing `KernelGraph` code. The graph owns the store — no shared references across tick boundaries.
 
 **Early-exit growth check:** `should_grow` short-circuits on the first excited kernel — O(1) on familiar inputs, O(N·D) worst case. This is the hottest path in production; profile before changing the exit condition.
+
+## API
+
+| Symbol | Description |
+|--------|-------------|
+| `KernelGraph::new(edges, cfg)` | Create graph; takes edge store by move |
+| `KernelGraph::tick(x, label, t, sokm_cfg, kernel_cfg, dry_run)` | One learning step: activate → grow → strengthen → decay → prune → propagate. Returns `TickReport` |
+| `TickReport` | `grew: bool`, `best: Option<usize>`, `activated: Vec<(usize, f64)>` |
+| `KernelGraph::propagate_soft(x, cfg)` | Score all kernels then spread activation through edges |
+| `KernelGraph::best_match(x, cfg)` | Return kernel index with highest propagated score |
+| `AosKernelStore::push(centroid, sigma, label)` | Add kernel manually (bypasses growth rule) |
+| `should_grow_direct(store, x, cfg)` | Growth check without edge access — for ECS callers |
+| `compute_scores(store, x)` | Raw activation scores for all live kernels |
+| `Stm::update(idx, store)` / `Stm::blend_output(x, store, alpha)` | STM: record recent activations; blend centroid mean into output |
+
+## MSRV
+
+Rust 1.95 (stable). No nightly required.
 
 ## Reference
 

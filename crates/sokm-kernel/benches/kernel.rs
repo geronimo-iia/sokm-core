@@ -1,4 +1,5 @@
 use criterion::{BatchSize, BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use sokm::DecayMode;
 use sokm::SokmConfig;
 use sokm::SparseEdgeStore;
 use sokm_kernel::KernelStore;
@@ -16,7 +17,7 @@ fn make_graph(n: usize, d: usize, edges_per_node: usize) -> KernelGraph<SparseEd
     let mut g = KernelGraph::new(SparseEdgeStore::new(n + 10), &kernel_cfg);
     for i in 0..n {
         let x: Vec<f64> = (0..d).map(|j| (i * d + j) as f64 * 0.001).collect();
-        g.tick(&x, Some(0), i as u64, &sokm_cfg, &kernel_cfg);
+        g.tick(&x, Some(0), i as u64, &sokm_cfg, &kernel_cfg, DecayMode::Apply);
     }
     for i in 0..n {
         for j in 1..=edges_per_node {
@@ -95,7 +96,7 @@ fn bench_kernel_graph_tick_parametric(c: &mut Criterion) {
         group.bench_function(BenchmarkId::new("n_16d", n), |b| {
             b.iter_batched(
                 || make_graph(n, 16, 4),
-                |mut g| g.tick(&x, Some(0), 9999, &sokm_cfg, &kernel_cfg),
+                |mut g| g.tick(&x, Some(0), 9999, &sokm_cfg, &kernel_cfg, DecayMode::Apply),
                 BatchSize::SmallInput,
             )
         });
@@ -112,7 +113,7 @@ fn bench_kernel_graph_tick_realistic(c: &mut Criterion) {
         group.bench_function(format!("358d/{n}"), |b| {
             b.iter_batched(
                 || make_graph(n, 358, 4),
-                |mut g| g.tick(&x, Some(0), 99999, &sokm_cfg, &kernel_cfg),
+                |mut g| g.tick(&x, Some(0), 99999, &sokm_cfg, &kernel_cfg, DecayMode::Apply),
                 BatchSize::SmallInput,
             )
         });

@@ -17,12 +17,12 @@ pub struct KernelConfig {
     pub q: f64,
     /// STM capacity N_{s,max}: max kernels in working memory. [Hoya p.164]
     pub stm_capacity: usize,
-    /// Inactivity extinction period for kernels, in ticks. [Hoya pp. 80–99, Rule 3] [DIRECT]
+    /// Inactivity extinction period for kernels, in ticks. [Hoya pp. 80–99, Rule 3]
     /// Kernel inactive for > p1_kernel ticks since last_activated is marked extinct.
     /// Default: u64::MAX — extinction disabled unless caller opts in.
-    /// See [`KernelTickReport::newly_extinct`] for the per-tick count.
+    /// See `KernelTickReport::newly_extinct` for the per-tick count.
     pub p1_kernel: u64,
-    /// Co-activation count for label inheritance. [Hoya §4.3] [DIRECT]
+    /// Co-activation count for label inheritance. [Hoya §4.3]
     /// u32::MAX = disabled (default).
     #[cfg_attr(feature = "serde", serde(default = "default_label_inherit_threshold"))]
     pub label_inherit_threshold: u32,
