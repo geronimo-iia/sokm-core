@@ -11,8 +11,8 @@ Implements the link-weight layer from Tetsuya Hoya (2005),
 and propagate over a sparse weighted graph.
 
 This crate is the foundation layer. For kernel units and growth, see
-[`sokm-kernel`](https://github.com/geronimo-iia/sokm-rs/tree/main/crates/sokm-kernel). For multi-modal associative memory, see
-[`sokm-multimodal`](https://github.com/geronimo-iia/sokm-rs/tree/main/crates/sokm-multimodal).
+[`sokm-kernel`](https://github.com/geronimo-iia/sokm-core/tree/main/crates/sokm-kernel). For multi-modal associative memory, see
+[`sokm-rs`](https://github.com/geronimo-iia/sokm-rs).
 
 ## What it does
 
@@ -76,11 +76,11 @@ Covers `tick`, `decay`, `strengthen`, `prune`, `propagate_soft`, and
 ## Crate map
 
 ```
-sokm              ← link layer (this crate)
-sokm-kernel       ← kernel units, growth, STM
-sokm-multimodal   ← Gestalt K³ cross-modal memory
-sokm-emotion      ← emotional state layer
-sokm-memory       ← persistent episodic memory store
+sokm              ← link layer (this crate)          [sokm-core]
+sokm-kernel       ← kernel units, growth, STM        [sokm-core]
+sokm-multimodal   ← Gestalt K³ cross-modal memory    [sokm-rs]
+sokm-emotion      ← emotional state layer             [sokm-rs]
+sokm-memory       ← persistent episodic memory store  [sokm-rs]
 ```
 
 ## Design notes

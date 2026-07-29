@@ -30,6 +30,10 @@ default = []
 serde = ["dep:serde", "dep:rmp-serde", "sokm/serde"]
 simd = ["dep:wide"]
 
+[package.metadata.docs.rs]
+features = ["serde", "simd"]
+rustdoc-args = ["--cfg", "docsrs"]
+
 [[bench]]
 name = "kernel"
 harness = false

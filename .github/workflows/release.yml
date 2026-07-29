@@ -35,10 +35,10 @@ jobs:
 
       - uses: taiki-e/install-action@v2
         with:
-          tool: cargo-audit
+          tool: cargo-deny
 
-      - name: Security audit
-        run: cargo audit
+      - name: Licenses, bans, advisories
+        run: cargo deny check
 
   publish:
     needs: test

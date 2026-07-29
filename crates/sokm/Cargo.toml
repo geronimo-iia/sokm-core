@@ -27,6 +27,10 @@ rmp-serde = { workspace = true }
 default = []
 serde = ["dep:serde", "dep:rmp-serde"]
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
 [[bench]]
 name = "tick"
 harness = false
