@@ -72,6 +72,29 @@ cargo run -p sokm --example hebbian_link
 Demonstrates decay, strengthen, prune, and soft propagation on a small graph.
 Shows edge weight growth under repeated co-activation, decay when co-activation stops, and cued recall via `propagate_soft`.
 
+```text
+=== Phase 1: co-activate nodes 0 and 1 for 20 ticks ===
+tick   w(0,1)       edges     
+1      0.100000     1           (strengthened=1, pruned=0)
+5      0.273410     1           (strengthened=1, pruned=0)
+10     0.480643     1           (strengthened=1, pruned=0)
+15     0.677768     1           (strengthened=1, pruned=0)
+20     0.865280     1           (strengthened=1, pruned=0)
+
+=== Phase 2: stop co-activating — decay only for 30 ticks ===
+tick   w(0,1)       edges     
+25     0.823080     1           pruned=0
+30     0.782937     1           pruned=0
+...
+50     0.641015     1           pruned=0
+
+=== Phase 3: rebuild with 3 nodes, then soft propagate ===
+edges after 10 ticks: 3
+soft propagation from node 0:
+  node 1 → 0.393653
+  node 2 → 0.315803
+```
+
 ## Benchmarks
 
 ```bash

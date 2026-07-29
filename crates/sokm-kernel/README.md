@@ -89,6 +89,21 @@ cargo run -p sokm-kernel --example category_formation
 Demonstrates autonomous category formation using `SparseEdgeStore`: trains a graph on two labelled
 clusters, then classifies novel inputs by nearest kernel.
 
+```text
+tick  0: new kernel grown, total = 1
+tick  3: new kernel grown, total = 2
+
+Kernels after training: 2
+
+Classification:
+  x=[0.15, 0.25] → predicted=Some(0) (expected 0) ✓
+  x=[4.9, 5.1] → predicted=Some(1) (expected 1) ✓
+  x=[0.05, 0.05] → predicted=Some(0) (expected 0) ✓
+  x=[5.2, 5.3] → predicted=Some(1) (expected 1) ✓
+
+4/4 correct
+```
+
 ```bash
 cargo build --release -p sokm-kernel --example profile_gaussian
 ./target/release/examples/profile_gaussian
