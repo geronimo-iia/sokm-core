@@ -321,7 +321,7 @@ impl EdgeStore<usize> for SparseEdgeStore {
             .keys()
             .filter(|&&key| {
                 self.csr_vals[self.csr_index[&key]] > 0.0
-                    && current_tick.saturating_sub(*self.ticks.get(&key).unwrap_or(&0)) > p1
+                    && current_tick.saturating_sub(*self.ticks.get(&key).unwrap_or(&0)) > p1 // > not >=: survives p1-th inactive tick [Hoya §4]
             })
             .copied()
             .collect();
@@ -335,7 +335,7 @@ impl EdgeStore<usize> for SparseEdgeStore {
         let pending_dead: Vec<(usize, usize)> = self
             .pending
             .keys()
-            .filter(|k| current_tick.saturating_sub(*self.ticks.get(k).unwrap_or(&0)) > p1)
+            .filter(|k| current_tick.saturating_sub(*self.ticks.get(k).unwrap_or(&0)) > p1) // > not >=: survives p1-th inactive tick [Hoya §4]
             .copied()
             .collect();
         let pending_count = pending_dead.len();

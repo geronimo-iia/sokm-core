@@ -111,7 +111,7 @@ impl<K: Copy + Eq + Hash + Ord> EdgeStore<K> for HashEdgeStore<K> {
             .keys()
             .filter(|k| {
                 let last = *self.ticks.get(k).unwrap_or(&0);
-                current_tick.saturating_sub(last) > p1
+                current_tick.saturating_sub(last) > p1 // > not >=: survives p1-th inactive tick [Hoya §4]
             })
             .copied()
             .collect();
