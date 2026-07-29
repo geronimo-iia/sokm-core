@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/sokm",
+  "crates/sokm-kernel",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/geronimo-iia/sokm-core"
+homepage = "https://github.com/geronimo-iia/sokm-core"
+
+[workspace.dependencies]
+sokm = { path = "crates/sokm", version = "0.1.0" }
+sokm-kernel = { path = "crates/sokm-kernel", version = "0.1.0" }
+thiserror = { version = "2" }
+sprs = "0.11"
+wide = { version = "1.5" }
+serde = { version = "1", features = ["derive"] }
+rmp-serde = { version = "1" }
+criterion = { version = "0.5", features = ["html_reports"] }
+serde_json = { version = "1" }

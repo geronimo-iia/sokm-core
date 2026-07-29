@@ -1,0 +1,10 @@
+/target
+Cargo.lock
+docs/prompts/
+artifacts/
+.claude/
+docs/brainstorming
+.venv
+__pycache__
+.pytest_cache
+models/
