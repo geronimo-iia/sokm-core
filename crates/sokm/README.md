@@ -75,24 +75,24 @@ Shows edge weight growth under repeated co-activation, decay when co-activation 
 ```text
 === Phase 1: co-activate nodes 0 and 1 for 20 ticks ===
 tick   w(0,1)       edges     
-1      0.100000     1           (strengthened=1, pruned=0)
-5      0.273410     1           (strengthened=1, pruned=0)
-10     0.480643     1           (strengthened=1, pruned=0)
-15     0.677768     1           (strengthened=1, pruned=0)
-20     0.865280     1           (strengthened=1, pruned=0)
+1      0.100000     1           ← edge created at w_init
+5      0.273410     1
+10     0.480643     1
+15     0.677768     1
+20     0.865280     1           ← weight approaches w_max (1.0) after 20 ticks
 
 === Phase 2: stop co-activating — decay only for 30 ticks ===
 tick   w(0,1)       edges     
-25     0.823080     1           pruned=0
-30     0.782937     1           pruned=0
+25     0.823080     1
+30     0.782937     1
 ...
-50     0.641015     1           pruned=0
+50     0.641015     1           ← edge survives: w still above min_weight (0.001)
 
 === Phase 3: rebuild with 3 nodes, then soft propagate ===
 edges after 10 ticks: 3
 soft propagation from node 0:
-  node 1 → 0.393653
-  node 2 → 0.315803
+  node 1 → 0.393653            ← cued recall: node 1 activated via learned edge
+  node 2 → 0.315803            ← weaker recall: node 2 less strongly co-activated
 ```
 
 ## Benchmarks

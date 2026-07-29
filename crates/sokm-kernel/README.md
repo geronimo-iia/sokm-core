@@ -90,10 +90,11 @@ Demonstrates autonomous category formation using `SparseEdgeStore`: trains a gra
 clusters, then classifies novel inputs by nearest kernel.
 
 ```text
-tick  0: new kernel grown, total = 1
-tick  3: new kernel grown, total = 2
+tick  0: new kernel grown, total = 1  ← novel input: no kernel excited, grow
+tick  3: new kernel grown, total = 2  ← second cluster detected, grow again
+                                        no further growth: all inputs recognised
 
-Kernels after training: 2
+Kernels after training: 2             ← exactly 2 kernels for 2 clusters
 
 Classification:
   x=[0.15, 0.25] → predicted=Some(0) (expected 0) ✓
@@ -101,7 +102,7 @@ Classification:
   x=[0.05, 0.05] → predicted=Some(0) (expected 0) ✓
   x=[5.2, 5.3] → predicted=Some(1) (expected 1) ✓
 
-4/4 correct
+4/4 correct                           ← generalises to unseen inputs
 ```
 
 ```bash
