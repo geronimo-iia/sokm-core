@@ -24,6 +24,10 @@ pub fn should_grow_direct(store: &impl KernelStore, x: &[f64], cfg: &KernelConfi
 /// Hardcodes `gaussian` — update when KernelGraph exposes activation fn selection
 /// (SIMD path, v0.4+).
 pub fn compute_scores(store: &impl KernelStore, x: &[f64]) -> Vec<f64> {
+    debug_assert!(
+        x.iter().all(|v| v.is_finite()),
+        "compute_scores: input x contains non-finite values: {x:?}"
+    );
     (0..store.len())
         .map(|i| {
             if store.is_extinct(i) {
@@ -162,6 +166,15 @@ mod tests {
         store.mark_extinct(0);
         // Extinct kernel at input must not suppress growth
         assert!(should_grow_direct(&store, &[0.0], &cfg()));
+    }
+
+    #[test]
+    #[cfg(debug_assertions)]
+    #[should_panic(expected = "non-finite")]
+    fn compute_scores_panics_on_nan_input() {
+        let mut store = AosKernelStore::new();
+        store.push(&[1.0, 2.0], 1.0, Some(0));
+        compute_scores(&store, &[f64::NAN, 1.0]);
     }
 
     #[test]
