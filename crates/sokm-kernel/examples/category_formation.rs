@@ -3,9 +3,12 @@
 //! The graph grows a kernel for each distinct region of input space it encounters.
 //! After training, `predict` classifies novel inputs by nearest kernel.
 //!
+//! Uses `SparseEdgeStore` — the production backend for large graphs.
+//! For tests or small ephemeral graphs, `HashEdgeStore` is simpler.
+//!
 //! Run: cargo run -p sokm-kernel --example category_formation
 
-use sokm::{DecayMode, HashEdgeStore, SokmConfig};
+use sokm::{DecayMode, SokmConfig, SparseEdgeStore};
 use sokm_kernel::store::KernelStore;
 use sokm_kernel::{KernelConfig, KernelGraph, compute_scores};
 
@@ -13,8 +16,10 @@ fn main() {
     let sokm_cfg = SokmConfig::default();
     let kernel_cfg = KernelConfig::default();
 
-    let mut graph: KernelGraph<HashEdgeStore<usize>> =
-        KernelGraph::new(HashEdgeStore::default(), &kernel_cfg);
+    // SparseEdgeStore capacity hint = expected max kernel count.
+    // Grows automatically if exceeded.
+    let mut graph: KernelGraph<SparseEdgeStore> =
+        KernelGraph::new(SparseEdgeStore::new(16), &kernel_cfg);
 
     // Training stream: two classes separated in 2D space.
     // Class 0 clusters around (0, 0); class 1 clusters around (5, 5).

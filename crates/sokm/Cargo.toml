@@ -31,6 +31,9 @@ serde = ["dep:serde", "dep:rmp-serde"]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[[example]]
+name = "hebbian_link"
+
 [[bench]]
 name = "tick"
 harness = false
