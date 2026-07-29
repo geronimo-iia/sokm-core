@@ -1,9 +1,9 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use std::hint::black_box;
 use sokm::{
     DecayMode, EdgeStore, SokmConfig, SparseEdgeStore, decay, propagate, propagate_soft, prune,
     strengthen, tick,
 };
+use std::hint::black_box;
 
 fn setup_store(nodes: usize, edges_per_node: usize) -> SparseEdgeStore {
     let mut s = SparseEdgeStore::new(nodes);

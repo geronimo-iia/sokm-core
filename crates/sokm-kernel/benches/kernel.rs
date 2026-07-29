@@ -1,5 +1,4 @@
 use criterion::{BatchSize, BenchmarkId, Criterion, criterion_group, criterion_main};
-use std::hint::black_box;
 use sokm::DecayMode;
 use sokm::SokmConfig;
 use sokm::SparseEdgeStore;
@@ -11,6 +10,7 @@ use sokm_kernel::config::KernelConfig;
 use sokm_kernel::graph::KernelGraph;
 use sokm_kernel::growth::should_grow_direct;
 use sokm_kernel::store::DefaultKernelStore;
+use std::hint::black_box;
 
 fn make_graph(n: usize, d: usize, edges_per_node: usize) -> KernelGraph<SparseEdgeStore> {
     let sokm_cfg = SokmConfig::default();
