@@ -102,25 +102,6 @@ cargo bench -p sokm-kernel --features simd         # SIMD scoring bench
 cargo publish --dry-run -p sokm                    # pre-release gate
 ```
 
-## Writing plans
-
-1. Read the spec or improvement doc describing the feature
-2. Read all live source files that will be touched — derive exact signatures and call sites from
-   the code, not from the spec
-3. Save to `.claude/plans/YYYY-MM-DD-<feature-name>.md`
-4. Self-review before saving:
-   - Every requirement has a task; every task shows exact code, not placeholders
-   - Every file a task touches is listed, including callers of changed signatures
-   - Tasks are sequenced so each one compiles independently after the previous commit
-   - Each task maps to exactly one commit
-
-## Executing plans
-
-1. Read `AGENTS.md` (this file) first
-2. Execute tasks in order; run `cargo test --workspace` after each before committing
-3. After all tasks complete, write `.claude/plans/YYYY-MM-DD-<plan-name>-status.md`
-   summarising outcomes and deviations from the plan
-
 ## Commit convention
 
 Conventional commits, single line: `type(scope): short description`
