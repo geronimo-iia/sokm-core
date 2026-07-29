@@ -1,10 +1,16 @@
 # cargo-release config
-# publish order is derived from the dependency graph (sokm before sokm-kernel automatically)
+[workspace]
+# sokm must publish before sokm-kernel (dependency order)
+publish-order = [
+  "sokm",
+  "sokm-kernel",
+]
 
 [publish]
 verify = true
 
 [tag]
+# Tag format: v0.1.0
 name = "v{{version}}"
 
 [push]
