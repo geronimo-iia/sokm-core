@@ -63,6 +63,15 @@ implement `Reindex`.
 |---------|---------|-------------|
 | `serde` | off | `Serialize`/`Deserialize` for all public types |
 
+## Examples
+
+```bash
+cargo run -p sokm --example hebbian_link
+```
+
+Demonstrates decay, strengthen, prune, and soft propagation on a small graph.
+Shows edge weight growth under repeated co-activation, decay when co-activation stops, and cued recall via `propagate_soft`.
+
 ## Benchmarks
 
 ```bash

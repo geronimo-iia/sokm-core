@@ -86,8 +86,16 @@ comparison for `compute_scores`.
 cargo run -p sokm-kernel --example category_formation
 ```
 
-Demonstrates autonomous category formation: trains a graph on two labelled
+Demonstrates autonomous category formation using `SparseEdgeStore`: trains a graph on two labelled
 clusters, then classifies novel inputs by nearest kernel.
+
+```bash
+cargo build --release -p sokm-kernel --example profile_gaussian
+./target/release/examples/profile_gaussian
+```
+
+Profiling harness for `should_grow_direct` — 10k kernels × 358d, 500 iterations.
+Intended for use with Instruments CPU Profiler or `perf`.
 
 ## Crate map
 
