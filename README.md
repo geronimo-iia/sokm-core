@@ -13,8 +13,7 @@ is not the only way.
 
 In 2005, Tetsuya Hoya published *Artificial Mind System: Kernel Memory Approach*. It describes a
 learning algorithm that grows a network one pass at a time, with no gradient, no epochs, no loss
-function. I found it buried in the literature and had to implement it to understand it.
-`sokm-core` is the result.
+function. I found it buried in the literature. It stayed with me — quietly, for years — until I had to build it to know if it was real. `sokm-core` is the result.
 
 ### The growth rule
 
@@ -54,7 +53,7 @@ This repo is the two lowest layers only:
 - **`sokm`** — Hebbian link mechanics (decay, strengthen, prune, propagate)
 - **`sokm-kernel`** — kernel units, activation scoring, one-pass growth, STM, class inheritance
 
-Upper layers (emotion, multimodal, episodic memory) are out of scope here.
+Upper layers — emotion, multimodal, episodic memory — are built on top of these primitives and live elsewhere for now.
 
 ## When to use
 
@@ -63,7 +62,7 @@ SOKM fits problems where:
 - **associations matter** — which inputs co-occur, not just which class they belong to
 - **no retraining budget** — the system must learn incrementally in real time
 
-Not a good fit for: fixed dataset classification (use a neural net), density estimation (use GMM/KDE), or nearest-neighbour lookup (use HNSW/FAISS).
+If you have a fixed dataset and a training budget, a neural net will outperform it. SOKM's edge is the stream — inputs that arrive one at a time, without a second pass.
 
 ## Crates
 
