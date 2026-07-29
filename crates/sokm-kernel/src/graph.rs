@@ -58,6 +58,17 @@ pub struct KernelGraph<S: EdgeStore<usize>, K: KernelStore = AosKernelStore> {
     // Dense propagation scratch — reused across ticks to avoid per-tick allocation.
     // prop_scratch[j] accumulates γ·w_ij·K_i(x) from all active i; zeroed via prop_touched.
     // prop_dirty[j] guards dedup for prop_touched — avoids float equality trap.
+    //
+    // INVARIANT: prop_scratch is fully zeroed at the end of every tick.
+    // prop_touched tracks which indices were written; the zero-pass at tick end
+    // clears only those indices (O(active×degree), not O(num_nodes)).
+    // After a grow tick, the new kernel slot is initialised to 0.0 by Vec::resize
+    // and is never written during that tick — no stale value is possible.
+    //
+    // INVARIANT: prop_scratch.len() is at most 1 behind kernels.len().
+    // Step 1.5 resizes scratch to kernels.len() before propagation each tick.
+    // On a grow tick, the kernel is added after Step 1.5 — scratch covers
+    // kernels.len()-1 for that tick only. The new slot is covered on the next tick.
     pub(crate) prop_scratch: Vec<f64>,
     prop_touched: Vec<usize>,
     prop_dirty: Vec<bool>,
@@ -430,7 +441,12 @@ impl<S: EdgeStore<usize>, K: KernelStore> KernelGraph<S, K> {
     /// Compact extinct kernels, reindex edges and STM.
     /// Returns number of kernels removed.
     /// Invalidates all previously obtained kernel indices.
-    /// Must only be called between ticks, never mid-tick.
+    ///
+    /// # INVARIANT: must only be called between ticks, never mid-tick
+    /// Compaction remaps all kernel indices. Calling this during a tick would
+    /// corrupt prop_scratch indices, STM indices, and any in-flight activated
+    /// list. KernelGraph owns this constraint — callers must not call compact
+    /// from within a tick callback or concurrently with tick.
     pub fn compact(&mut self) -> usize
     where
         S: Reindex,
@@ -507,12 +523,13 @@ impl<S: EdgeStore<usize>, K: KernelStore> KernelGraph<S, K> {
     /// Wrapper: calls `compute_scores` then `sokm::propagate_soft`. Adds no logic.
     /// For retrieval callers: returns graded spread even below theta_k.
     pub fn propagate_soft(&self, x: &[f64], sokm_cfg: &SokmConfig) -> Vec<(usize, f64)> {
-        let activated: Vec<(usize, f64)> = compute_scores(&self.kernels, x)
+        // enumerate() index == kernel store index — compute_scores() preserves store order
+        let kernel_activations: Vec<(usize, f64)> = compute_scores(&self.kernels, x)
             .into_iter()
             .enumerate()
             .filter(|&(_, s)| s > 0.0)
             .collect();
-        sokm::propagate_soft(&self.edges, &activated, sokm_cfg)
+        sokm::propagate_soft(&self.edges, &kernel_activations, sokm_cfg)
     }
 }
 
