@@ -17,7 +17,14 @@ fn make_graph(n: usize, d: usize, edges_per_node: usize) -> KernelGraph<SparseEd
     let mut g = KernelGraph::new(SparseEdgeStore::new(n + 10), &kernel_cfg);
     for i in 0..n {
         let x: Vec<f64> = (0..d).map(|j| (i * d + j) as f64 * 0.001).collect();
-        g.tick(&x, Some(0), i as u64, &sokm_cfg, &kernel_cfg, DecayMode::Apply);
+        g.tick(
+            &x,
+            Some(0),
+            i as u64,
+            &sokm_cfg,
+            &kernel_cfg,
+            DecayMode::Apply,
+        );
     }
     for i in 0..n {
         for j in 1..=edges_per_node {
