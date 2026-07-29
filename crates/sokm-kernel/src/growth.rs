@@ -48,7 +48,7 @@ pub fn grow(store: &mut impl KernelStore, x: &[f64], cfg: &KernelConfig, class: 
 mod tests {
     use super::*;
     use crate::config::KernelConfig;
-    use crate::store::AosKernelStore;
+    use crate::store::DefaultKernelStore;
 
     fn cfg() -> KernelConfig {
         KernelConfig::default() // theta_k=0.1, sigma_0=1.0
@@ -56,13 +56,13 @@ mod tests {
 
     #[test]
     fn max_activation_empty_kernels_returns_zero() {
-        let store = AosKernelStore::new();
+        let store = DefaultKernelStore::new();
         assert_eq!(max_activation(&store, &[1.0, 2.0]), 0.0);
     }
 
     #[test]
     fn max_activation_at_centroid_returns_one() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0, 2.0], 1.0, Some(0));
         let score = max_activation(&store, &[1.0, 2.0]);
         assert!((score - 1.0).abs() < 1e-10);
@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn max_activation_returns_highest_across_kernels() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0));
         store.push(&[5.0], 1.0, Some(0));
         let score = max_activation(&store, &[5.0]);
@@ -80,7 +80,7 @@ mod tests {
     #[test]
     fn growth_direct_blocked_when_kernel_explains_input() {
         // x == centroid → max_activation == 1.0 > theta_k=0.1
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, Some(0));
         assert!(!should_grow_direct(&store, &[1.0], &cfg()));
     }
@@ -88,20 +88,20 @@ mod tests {
     #[test]
     fn growth_direct_fires_when_no_kernel_explains_input() {
         // All kernels far away → max_activation < theta_k
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[100.0], 1.0, Some(0));
         assert!(should_grow_direct(&store, &[0.0], &cfg()));
     }
 
     #[test]
     fn growth_fires_on_empty_kernels() {
-        let store = AosKernelStore::new();
+        let store = DefaultKernelStore::new();
         assert!(should_grow_direct(&store, &[1.0], &cfg()));
     }
 
     #[test]
     fn grow_adds_kernel_with_correct_fields() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         let cfg = cfg();
         grow(&mut store, &[1.0, 2.0], &cfg, Some(3));
         assert_eq!(store.len(), 1);
@@ -113,7 +113,7 @@ mod tests {
 
     #[test]
     fn grow_with_none_class_creates_unlabelled_kernel() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         let cfg = cfg();
         grow(&mut store, &[1.0], &cfg, None);
         assert!(store.class_opt(0).is_none());
@@ -121,7 +121,7 @@ mod tests {
 
     #[test]
     fn extinct_kernel_score_is_zero() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0)); // at centroid → score = 1.0 normally
         store.mark_extinct(0);
         let scores = compute_scores(&store, &[0.0]);
@@ -130,7 +130,7 @@ mod tests {
 
     #[test]
     fn extinct_kernel_does_not_suppress_growth() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0));
         store.mark_extinct(0);
         // extinct kernel scores 0.0, so should_grow_direct should return true
@@ -139,7 +139,7 @@ mod tests {
 
     #[test]
     fn growth_sets_sigma_to_sigma_0() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         let cfg = KernelConfig {
             sigma_0: 2.5,
             ..KernelConfig::default()
@@ -150,7 +150,7 @@ mod tests {
 
     #[test]
     fn max_activation_all_extinct_returns_zero() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0));
         store.push(&[1.0], 1.0, Some(0));
         store.mark_extinct(0);
@@ -160,7 +160,7 @@ mod tests {
 
     #[test]
     fn should_grow_direct_with_mixed_extinct_alive() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0)); // at input — would block growth if alive
         store.push(&[100.0], 1.0, Some(0)); // far away
         store.mark_extinct(0);
@@ -172,14 +172,14 @@ mod tests {
     #[cfg(debug_assertions)]
     #[should_panic(expected = "non-finite")]
     fn compute_scores_panics_on_nan_input() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0, 2.0], 1.0, Some(0));
         compute_scores(&store, &[f64::NAN, 1.0]);
     }
 
     #[test]
     fn compute_scores_returns_vec_of_store_len() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0));
         store.push(&[1.0], 1.0, Some(0));
         store.push(&[2.0], 1.0, Some(0));

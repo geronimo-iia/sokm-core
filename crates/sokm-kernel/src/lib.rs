@@ -32,7 +32,7 @@ pub use stm::Stm;
 pub use unit::KernelUnit;
 
 // Store backends
-pub use store::{AosKernelStore, KernelStore};
+pub use store::{DefaultKernelStore, KernelStore};
 
 // Convenience wrapper — useful for standalone and tests
-pub use graph::{AosKernelGraph, KernelGraph, KernelTickReport};
+pub use graph::{DefaultKernelGraph, KernelGraph, KernelTickReport};

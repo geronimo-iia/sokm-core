@@ -5,7 +5,7 @@
 
 use sokm_kernel::config::KernelConfig;
 use sokm_kernel::growth::should_grow_direct;
-use sokm_kernel::store::{AosKernelStore, KernelStore};
+use sokm_kernel::store::{DefaultKernelStore, KernelStore};
 
 fn main() {
     const N: usize = 10_000;
@@ -14,7 +14,7 @@ fn main() {
 
     let cfg = KernelConfig::default();
 
-    let mut store = AosKernelStore::new();
+    let mut store = DefaultKernelStore::new();
     for i in 0..N {
         let c: Vec<f64> = (0..D).map(|j| (i * D + j) as f64 * 0.001).collect();
         store.push(&c, 1.0, Some(0));

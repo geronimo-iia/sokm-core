@@ -103,10 +103,10 @@ impl Stm {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::store::AosKernelStore;
+    use crate::store::DefaultKernelStore;
 
-    fn make_store(n: usize) -> AosKernelStore {
-        let mut store = AosKernelStore::new();
+    fn make_store(n: usize) -> DefaultKernelStore {
+        let mut store = DefaultKernelStore::new();
         for i in 0..n {
             store.push(&[i as f64], 1.0, Some(0));
             // set excitation to i by incrementing i times
@@ -154,7 +154,7 @@ mod tests {
     fn stm_blend_eq_10_5() {
         // o_STM[i] = lambda * centroid[i] + (1 - lambda) * x[i]
         let mut s = Stm::new(4);
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[2.0], 1.0, Some(0));
         s.update(0, &store);
         let x = vec![0.0];
@@ -216,7 +216,7 @@ mod tests {
     #[test]
     fn stm_blend_multiple_kernels_averages() {
         let mut s = Stm::new(4);
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0));
         store.push(&[4.0], 1.0, Some(0));
         s.update(0, &store);
@@ -230,7 +230,7 @@ mod tests {
     #[test]
     fn blend_output_empty_stm_returns_x() {
         let s = Stm::new(4);
-        let store = AosKernelStore::new();
+        let store = DefaultKernelStore::new();
         let x = vec![1.0, 2.0, 3.0];
         assert_eq!(s.blend_output(&x, &store, 0.7), x);
     }
@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn blend_output_lambda_zero_returns_x() {
         let mut s = Stm::new(4);
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[10.0], 1.0, Some(0));
         s.update(0, &store);
         let x = vec![5.0];
@@ -249,7 +249,7 @@ mod tests {
     #[test]
     fn blend_output_lambda_one_returns_centroid_mean() {
         let mut s = Stm::new(4);
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[10.0], 1.0, Some(0));
         s.update(0, &store);
         let x = vec![5.0];
@@ -271,7 +271,7 @@ mod tests {
     fn tie_break_evicts_fifo() {
         // Two kernels with equal excitation — first inserted is evicted (min_by_key is stable)
         let mut s = Stm::new(2);
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0)); // excitation=0
         store.push(&[1.0], 1.0, Some(0)); // excitation=0
         store.push(&[2.0], 1.0, Some(0)); // excitation=0
@@ -291,7 +291,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "centroid dimension")]
     fn blend_output_panics_on_dim_mismatch() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0, 2.0], 1.0, Some(0)); // dim=2
         let mut s = Stm::new(4);
         s.update(0, &store);

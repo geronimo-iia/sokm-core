@@ -9,7 +9,7 @@ use sokm_kernel::activation::{compact, gaussian};
 use sokm_kernel::config::KernelConfig;
 use sokm_kernel::graph::KernelGraph;
 use sokm_kernel::growth::should_grow_direct;
-use sokm_kernel::store::AosKernelStore;
+use sokm_kernel::store::DefaultKernelStore;
 
 fn make_graph(n: usize, d: usize, edges_per_node: usize) -> KernelGraph<SparseEdgeStore> {
     let sokm_cfg = SokmConfig::default();
@@ -28,8 +28,8 @@ fn make_graph(n: usize, d: usize, edges_per_node: usize) -> KernelGraph<SparseEd
     g
 }
 
-fn make_kernels(n: usize, d: usize) -> AosKernelStore {
-    let mut store = AosKernelStore::new();
+fn make_kernels(n: usize, d: usize) -> DefaultKernelStore {
+    let mut store = DefaultKernelStore::new();
     for i in 0..n {
         let c: Vec<f64> = (0..d).map(|j| (i * d + j) as f64 * 0.001).collect();
         store.push(&c, 1.0, Some(0));

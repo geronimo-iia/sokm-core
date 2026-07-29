@@ -56,14 +56,14 @@ pub trait KernelStore {
     fn compact_extinct(&mut self) -> Vec<Option<usize>>;
 }
 
-/// AoS backend — wraps `Vec<KernelUnit>`. Identical behaviour to v0.1.
+/// Default backend — wraps `Vec<KernelUnit>`.
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AosKernelStore {
+pub struct DefaultKernelStore {
     kernels: Vec<KernelUnit>,
 }
 
-impl AosKernelStore {
+impl DefaultKernelStore {
     pub fn new() -> Self {
         Self {
             kernels: Vec::new(),
@@ -71,13 +71,13 @@ impl AosKernelStore {
     }
 }
 
-impl Default for AosKernelStore {
+impl Default for DefaultKernelStore {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl KernelStore for AosKernelStore {
+impl KernelStore for DefaultKernelStore {
     fn len(&self) -> usize {
         self.kernels.len()
     }
@@ -148,8 +148,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn aos_store_push_and_len() {
-        let mut store = AosKernelStore::new();
+    fn default_store_push_and_len() {
+        let mut store = DefaultKernelStore::new();
         assert_eq!(store.len(), 0);
         assert!(store.is_empty());
         store.push(&[1.0, 2.0], 0.5, Some(1));
@@ -160,8 +160,8 @@ mod tests {
     }
 
     #[test]
-    fn aos_store_centroid_roundtrip() {
-        let mut store = AosKernelStore::new();
+    fn default_store_centroid_roundtrip() {
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0, 2.0, 3.0], 0.5, Some(7));
         assert_eq!(store.centroid(0), &[1.0, 2.0, 3.0]);
         assert_eq!(store.sigma(0), 0.5);
@@ -172,38 +172,38 @@ mod tests {
     }
 
     #[test]
-    fn aos_push_none_class_creates_unlabelled() {
-        let mut store = AosKernelStore::new();
+    fn default_push_none_class_creates_unlabelled() {
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, None);
         assert!(store.class_opt(0).is_none());
     }
 
     #[test]
-    fn aos_class_opt_returns_none_for_unlabelled() {
-        let mut store = AosKernelStore::new();
+    fn default_class_opt_returns_none_for_unlabelled() {
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, None);
         assert_eq!(store.class_opt(0), None);
     }
 
     #[test]
-    fn aos_set_class_assigns_label() {
-        let mut store = AosKernelStore::new();
+    fn default_set_class_assigns_label() {
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, None);
         store.set_class(0, 5);
         assert_eq!(store.class_opt(0), Some(5));
     }
 
     #[test]
-    fn aos_set_class_noop_if_already_labelled() {
-        let mut store = AosKernelStore::new();
+    fn default_set_class_noop_if_already_labelled() {
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, Some(3));
         store.set_class(0, 7);
         assert_eq!(store.class_opt(0), Some(3));
     }
 
     #[test]
-    fn aos_store_min_excitation_idx() {
-        let mut store = AosKernelStore::new();
+    fn default_store_min_excitation_idx() {
+        let mut store = DefaultKernelStore::new();
         assert_eq!(store.min_excitation_idx(), None);
         store.push(&[1.0], 1.0, Some(0));
         store.push(&[2.0], 1.0, Some(0));
@@ -217,7 +217,7 @@ mod tests {
 
     #[test]
     fn touch_records_tick() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0));
         store.touch(0, 42);
         assert_eq!(store.last_activated(0), 42);
@@ -225,14 +225,14 @@ mod tests {
 
     #[test]
     fn last_activated_zero_on_new_kernel() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0));
         assert_eq!(store.last_activated(0), 0);
     }
 
     #[test]
     fn touch_updates_on_repeated_activation() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0));
         store.touch(0, 10);
         store.touch(0, 20);
@@ -241,15 +241,15 @@ mod tests {
 
     #[cfg(feature = "serde")]
     #[test]
-    fn aos_store_msgpack_roundtrip() {
-        let mut store = AosKernelStore::new();
+    fn default_store_msgpack_roundtrip() {
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0, 2.0, 3.0], 0.5, Some(7));
         store.push(&[4.0, 5.0, 6.0], 1.0, Some(3));
         store.incr_excitation(0);
         store.touch(0, 42);
 
         let bytes = rmp_serde::to_vec(&store).unwrap();
-        let back: AosKernelStore = rmp_serde::from_slice(&bytes).unwrap();
+        let back: DefaultKernelStore = rmp_serde::from_slice(&bytes).unwrap();
 
         assert_eq!(back.len(), 2);
         assert_eq!(back.centroid(0), &[1.0, 2.0, 3.0]);
@@ -262,23 +262,23 @@ mod tests {
     }
 
     #[test]
-    fn aos_is_extinct_false_on_new_kernel() {
-        let mut store = AosKernelStore::new();
+    fn default_is_extinct_false_on_new_kernel() {
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, Some(0));
         assert!(!store.is_extinct(0));
     }
 
     #[test]
-    fn aos_kernel_marked_extinct_after_mark_extinct() {
-        let mut store = AosKernelStore::new();
+    fn default_kernel_marked_extinct_after_mark_extinct() {
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, Some(0));
         store.mark_extinct(0);
         assert!(store.is_extinct(0));
     }
 
     #[test]
-    fn aos_compact_extinct_reduces_len() {
-        let mut store = AosKernelStore::new();
+    fn default_compact_extinct_reduces_len() {
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, Some(0));
         store.push(&[2.0], 1.0, Some(0));
         store.push(&[3.0], 1.0, Some(0));
@@ -288,8 +288,8 @@ mod tests {
     }
 
     #[test]
-    fn aos_compact_extinct_returns_correct_mapping() {
-        let mut store = AosKernelStore::new();
+    fn default_compact_extinct_returns_correct_mapping() {
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, Some(0));
         store.push(&[2.0], 1.0, Some(0));
         store.push(&[3.0], 1.0, Some(0));
@@ -302,14 +302,14 @@ mod tests {
 
     #[test]
     fn compact_extinct_on_empty_no_panic() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         let map = store.compact_extinct();
         assert!(map.is_empty());
     }
 
     #[test]
     fn compact_extinct_no_extinct_is_identity() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 0.5, Some(1));
         store.push(&[2.0], 1.0, Some(2));
         store.incr_excitation(0);
@@ -326,7 +326,7 @@ mod tests {
 
     #[test]
     fn compact_extinct_preserves_fields_for_survivors() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 0.5, Some(1));
         store.push(&[2.0], 1.0, Some(2));
         store.push(&[3.0], 2.0, Some(3));
@@ -345,14 +345,14 @@ mod tests {
 
     #[test]
     fn is_extinct_oob_returns_false() {
-        let store = AosKernelStore::new();
+        let store = DefaultKernelStore::new();
         assert!(!store.is_extinct(0));
         assert!(!store.is_extinct(999));
     }
 
     #[test]
     fn min_excitation_idx_skips_extinct_kernel() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, Some(0)); // index 0, excitation=0
         store.push(&[2.0], 1.0, Some(0)); // index 1, excitation=0
         store.incr_excitation(1); // excitation[1]=1
@@ -364,7 +364,7 @@ mod tests {
 
     #[test]
     fn min_excitation_idx_all_extinct_returns_none() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, Some(0));
         store.push(&[2.0], 1.0, Some(0));
         store.mark_extinct(0);
@@ -374,7 +374,7 @@ mod tests {
 
     #[test]
     fn min_excitation_idx_live_kernel_with_higher_excitation_returned() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, Some(0)); // index 0, excitation=0, extinct
         store.push(&[2.0], 1.0, Some(0)); // index 1, excitation=0
         store.push(&[3.0], 1.0, Some(0)); // index 2, excitation=0
@@ -389,7 +389,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn set_class_oob_panics() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.set_class(0, 1); // OOB — should panic
     }
 }

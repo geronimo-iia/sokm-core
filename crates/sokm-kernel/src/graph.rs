@@ -3,7 +3,7 @@ use sokm::{DecayMode, EdgeStore, Reindex, SokmConfig, SokmReport};
 use crate::config::KernelConfig;
 use crate::growth::{compute_scores, grow};
 use crate::stm::Stm;
-use crate::store::{AosKernelStore, KernelStore};
+use crate::store::{DefaultKernelStore, KernelStore};
 
 /// Report from one KernelGraph tick cycle.
 #[derive(Debug, Clone)]
@@ -51,7 +51,7 @@ pub struct KernelTickReport {
 /// `tick` filters activated pairs to same-class only before calling `sokm::tick`.
 /// This enforces Hoya's Eqs 4.6-4.7 same-class strengthening rule.
 /// The `sokm` crate itself is class-agnostic — enforcement lives here.
-pub struct KernelGraph<S: EdgeStore<usize>, K: KernelStore = AosKernelStore> {
+pub struct KernelGraph<S: EdgeStore<usize>, K: KernelStore = DefaultKernelStore> {
     kernels: K,
     edges: S,
     stm: Stm,
@@ -91,8 +91,8 @@ pub struct KernelGraph<S: EdgeStore<usize>, K: KernelStore = AosKernelStore> {
     cache_valid: bool,
 }
 
-/// Convenience alias: KernelGraph with AoS kernel storage (v0.1 default).
-pub type AosKernelGraph<S> = KernelGraph<S, AosKernelStore>;
+/// Convenience alias: KernelGraph with default kernel storage.
+pub type DefaultKernelGraph<S> = KernelGraph<S, DefaultKernelStore>;
 
 // This impl block requires `K: Default` — it provides `new()` which constructs
 // the kernel store via Default. The second impl block (below) requires only `K: KernelStore`

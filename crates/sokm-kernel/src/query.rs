@@ -60,7 +60,7 @@ pub fn predict<S: EdgeStore<usize>>(
 mod tests {
     use super::*;
     use crate::config::KernelConfig;
-    use crate::store::{AosKernelStore, KernelStore};
+    use crate::store::{DefaultKernelStore, KernelStore};
     use sokm::{HashEdgeStore, SokmConfig};
 
     fn sokm_cfg() -> SokmConfig {
@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn predict_returns_none_on_empty_store() {
-        let store = AosKernelStore::new();
+        let store = DefaultKernelStore::new();
         let edges: HashEdgeStore<usize> = HashEdgeStore::new();
         assert_eq!(
             predict(&store, &edges, &[1.0], &sokm_cfg(), &kernel_cfg()),
@@ -82,7 +82,7 @@ mod tests {
 
     #[test]
     fn best_match_returns_none_on_empty_store() {
-        let store = AosKernelStore::new();
+        let store = DefaultKernelStore::new();
         let edges: HashEdgeStore<usize> = HashEdgeStore::new();
         assert_eq!(
             best_match(&store, &edges, &[1.0], &sokm_cfg(), &kernel_cfg()),
@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn predict_returns_class_of_nearest_kernel() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[1.0], 1.0, Some(7));
         let edges: HashEdgeStore<usize> = HashEdgeStore::new();
         assert_eq!(
@@ -103,7 +103,7 @@ mod tests {
 
     #[test]
     fn predict_prefers_higher_activation_kernel() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(1)); // kernel 0, class 1
         store.push(&[1.0], 1.0, Some(2)); // kernel 1, class 2
         let edges: HashEdgeStore<usize> = HashEdgeStore::new();
@@ -116,7 +116,7 @@ mod tests {
 
     #[test]
     fn best_match_score_is_direct_plus_propagated() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(1)); // kernel 0: fires at x=[0.0], direct=1.0
         store.push(&[5.0], 1.0, Some(2)); // kernel 1: far, direct≈0 at x=[0.0]
 
@@ -137,7 +137,7 @@ mod tests {
         assert!((score_with - score_without).abs() < 1e-6);
 
         // Two kernels at identical centroid — same direct score; edge tips kernel 1 to win
-        let mut store2 = AosKernelStore::new();
+        let mut store2 = DefaultKernelStore::new();
         store2.push(&[0.0], 1.0, Some(1)); // kernel 0
         store2.push(&[0.0], 1.0, Some(2)); // kernel 1 — identical centroid
         let mut edges2: HashEdgeStore<usize> = HashEdgeStore::new();
@@ -164,7 +164,7 @@ mod tests {
         // gaussian = exp(-sq_dist/sigma²). At x=1.0, centroid=0: exp(-1)≈0.368 >= theta_k=0.1.
         // Kernel 1 (centroid=5) gets propagated gamma=0.9 → combined≈0.9 > 0.368 → kernel 1 wins.
         // Without edges kernel 0 wins (0.368 > exp(-16)) — proves propagation changed outcome.
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0)); // kernel 0, class 0
         store.push(&[5.0], 1.0, Some(1)); // kernel 1, class 1
         store.push(&[10.0], 1.0, Some(2)); // kernel 2, class 2
@@ -190,7 +190,7 @@ mod tests {
 
     #[test]
     fn predict_unlabelled_kernel_returns_none() {
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, None); // unlabelled
         let edges: HashEdgeStore<usize> = HashEdgeStore::new();
         assert_eq!(
@@ -203,7 +203,7 @@ mod tests {
     fn best_match_all_extinct_returns_some() {
         // All kernels extinct → all scores 0.0. best_match still returns Some
         // because store is non-empty. Lock: returns last index with max_by tie-break.
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0));
         store.push(&[1.0], 1.0, Some(1));
         store.mark_extinct(0);
@@ -220,7 +220,7 @@ mod tests {
     fn extinct_kernel_wins_via_propagation() {
         // Lock behavior: an extinct kernel scores 0 directly but can receive propagation.
         // best_match adds propagated to direct, so extinct kernel can still win.
-        let mut store = AosKernelStore::new();
+        let mut store = DefaultKernelStore::new();
         store.push(&[0.0], 1.0, Some(0)); // kernel 0: fires at x=0
         store.push(&[100.0], 1.0, Some(1)); // kernel 1: extinct, far away
 
