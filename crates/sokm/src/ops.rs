@@ -28,6 +28,13 @@ pub fn decay<K: Copy + Eq + Hash + Ord>(store: &mut impl EdgeStore<K>, cfg: &Sok
 /// Class-agnostic: callers MUST pre-filter `activated` to same-class pairs.
 /// Passing cross-class pairs is not an error here — enforcement is the
 /// caller's responsibility (e.g. `KernelGraph::tick` in `sokm-kernel`).
+///
+/// # INVARIANT: same-class filtering
+/// This function never inspects kernel class labels — it has no access to them.
+/// The caller (KernelGraph::tick) is solely responsible for ensuring that
+/// `activated` contains only kernels of the same class as the current input.
+/// Passing unlabelled kernels (class = None) or cross-class pairs produces
+/// incorrect Hebbian strengthening with no error or warning.
 pub fn strengthen<K: Copy + Eq + Hash + Ord>(
     store: &mut impl EdgeStore<K>,
     activated: &[(K, f64)],
@@ -61,8 +68,15 @@ pub fn strengthen<K: Copy + Eq + Hash + Ord>(
 }
 
 /// Prune edges in two phases:
-/// 1. Weight-threshold: remove edges below `min_weight`.
-/// 2. Inactivity extinction: remove edges not touched in `p1` ticks.
+/// 1. Weight-threshold: remove edges where `w < min_weight` (strict less-than).
+/// 2. Inactivity extinction: remove edges where `(current_tick - last_active) > p1`
+///    (strict greater-than — an edge active at exactly `last + p1` survives).
+///
+/// # INVARIANT: p1 boundary semantics
+/// The inactivity condition is `> p1`, not `>= p1`. An edge touched at tick T
+/// survives until `current_tick - T > p1`, i.e. it is alive for exactly p1
+/// inactive ticks before being pruned on tick p1+1. This matches Hoya's
+/// specification: extinction occurs *after* p1 ticks of inactivity.
 pub fn prune<K: Copy + Eq + Hash + Ord>(
     store: &mut impl EdgeStore<K>,
     current_tick: u64,
@@ -161,7 +175,15 @@ pub fn tick<K: Copy + Eq + Hash + Ord>(
 // Utilities
 
 /// Return top `n` nodes by activation score, sorted descending.
+///
+/// # Preconditions
+/// All scores must be finite. NaN inputs violate this contract and produce
+/// non-deterministic ordering (`partial_cmp` treats NaN as `Equal`).
 pub fn top_n<K: Copy>(activated: &[(K, f64)], n: usize) -> Vec<(K, f64)> {
+    debug_assert!(
+        activated.iter().all(|(_, s)| s.is_finite()),
+        "top_n: non-finite score in input"
+    );
     let mut sorted = activated.to_vec();
     sorted.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
     sorted.truncate(n);
@@ -686,9 +708,13 @@ mod tests {
 
     #[test]
     fn top_n_nan_input_no_panic() {
-        let activated = vec![(0u32, f64::NAN), (1, 0.5), (2, 0.9)];
-        let top = top_n(&activated, 3);
-        assert_eq!(top.len(), 3);
-        // NaN comparisons return Equal via unwrap_or(Equal); stable sort preserves relative order
+        // NaN violates the precondition. In debug builds the debug_assert fires.
+        // This test only runs in release to confirm no UB (sort, truncate still terminate).
+        #[cfg(not(debug_assertions))]
+        {
+            let activated = vec![(0u32, f64::NAN), (1, 0.5), (2, 0.9)];
+            let top = top_n(&activated, 3);
+            assert_eq!(top.len(), 3);
+        }
     }
 }
