@@ -1,4 +1,5 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 use sokm::{
     DecayMode, EdgeStore, SokmConfig, SparseEdgeStore, decay, propagate, propagate_soft, prune,
     strengthen, tick,

@@ -1,4 +1,5 @@
-use criterion::{BatchSize, BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{BatchSize, BenchmarkId, Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 use sokm::DecayMode;
 use sokm::SokmConfig;
 use sokm::SparseEdgeStore;
