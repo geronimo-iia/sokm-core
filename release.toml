@@ -1,3 +1,4 @@
 verify = true
 tag-name = "v{{version}}"
 push = true
+allow-branch = ["*"]
