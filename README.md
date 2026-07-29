@@ -7,11 +7,50 @@ Core primitives for SOKM (Self-Organizing Kernel Memory) — incremental associa
 
 ## Background
 
-SOKM is a biologically-inspired learning system from Tetsuya Hoya (2005). Each input activates nearby kernel units (Gaussian radial basis functions). Co-activated units strengthen their Hebbian links; unused links decay and are pruned. Over time the system builds a sparse weighted graph that encodes which inputs tend to co-occur — with no batch pass, no backprop, no explicit loss function.
+Most neural networks learn by failing repeatedly and adjusting. Gradient descent computes error,
+backpropagates it through layers, nudges weights. Repeat millions of times. This works — but it
+is not the only way.
 
-The key insight: kernel growth is gated by whether any kernel is already excited by the input. Novel inputs grow new kernels; familiar inputs reinforce existing structure. This gives continuous, incremental learning at O(1) per familiar input.
+In 2005, Tetsuya Hoya published *Artificial Mind System: Kernel Memory Approach*. It describes a
+learning algorithm that grows a network one pass at a time, with no gradient, no epochs, no loss
+function. I found it buried in the literature and had to implement it to understand it.
+`sokm-core` is the result.
 
-This repo contains the two lowest layers:
+### The growth rule
+
+When an input `x` arrives, the network scores it against every existing kernel unit — a Gaussian
+radial basis function centred at a learned point:
+
+```
+K_i(x) = exp(−‖x − c_i‖² / σ_i²)
+```
+
+If nothing scores above threshold `θ_k`, the network grows: a new kernel is added with its
+centroid at `x`. That is the entire growth rule. The network remembers what it has not seen
+before, and ignores what it already knows.
+
+### Links that live and die
+
+Kernels are not isolated. Co-activated same-class pairs strengthen their link; unused links decay
+and eventually disappear. The lifecycle is three rules:
+
+1. **Decay** every tick: `w ← w × exp(−ξ)` — weight erodes whether you use it or not [Eq 4.1]
+2. **Strengthen** on co-activation: `w += δ · score_a · score_b`, clamped to `w_max` [Eqs 4.6–4.7]
+3. **Prune** after `p₁` inactive ticks or below `min_weight` — the link is gone
+
+The result is a sparse weighted graph that reflects actual co-occurrence history — not a fixed
+architecture decided before training.
+
+### Short-term memory
+
+There is also a bounded STM: a small set of recently active kernel indices. When full, the
+least-excited kernel is evicted — not the most recent one. The output blends the stored centroid
+with the current input: `o = λ·c_k + (1−λ)·x`. Simple, but it means the system has a notion
+of working memory built in.
+
+### Scope
+
+This repo is the two lowest layers only:
 - **`sokm`** — Hebbian link mechanics (decay, strengthen, prune, propagate)
 - **`sokm-kernel`** — kernel units, activation scoring, one-pass growth, STM, class inheritance
 
