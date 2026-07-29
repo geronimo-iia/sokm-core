@@ -39,8 +39,10 @@ impl Stm {
     /// Remap kernel indices after compact_extinct.
     /// Slots mapped to None (extinct kernel) are dropped.
     /// Capacity is unchanged — freed slots are available for future activations.
-    /// Precondition: not called mid-tick. KernelGraph::compact is responsible for
-    /// ensuring this — it must only be called between ticks.
+    ///
+    /// # INVARIANT: must only be called between ticks, never mid-tick
+    /// Called exclusively by KernelGraph::compact_with_map, which enforces this.
+    /// Direct callers must not invoke reindex during a tick.
     pub fn reindex(&mut self, map: &[Option<usize>]) {
         self.indices = self
             .indices
@@ -74,6 +76,13 @@ impl Stm {
             return x.to_vec();
         }
         let dim = x.len();
+        for &idx in &self.indices {
+            let c_len = store.centroid(idx).len();
+            assert_eq!(
+                c_len, dim,
+                "centroid dimension mismatch: centroid[{idx}].len()={c_len}, x.len()={dim}"
+            );
+        }
         let mut mean_centroid = vec![0.0f64; dim];
         for &idx in &self.indices {
             for (d, &v) in store.centroid(idx).iter().enumerate().take(dim) {
@@ -277,6 +286,16 @@ mod tests {
         );
         assert!(s.indices().contains(&1));
         assert!(s.indices().contains(&2));
+    }
+
+    #[test]
+    #[should_panic(expected = "centroid dimension")]
+    fn blend_output_panics_on_dim_mismatch() {
+        let mut store = AosKernelStore::new();
+        store.push(&[1.0, 2.0], 1.0, Some(0)); // dim=2
+        let mut s = Stm::new(4);
+        s.update(0, &store);
+        s.blend_output(&[1.0, 2.0, 3.0], &store, 0.7); // dim=3 → panic
     }
 
     #[test]
