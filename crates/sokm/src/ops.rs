@@ -15,6 +15,14 @@ pub struct SokmReport {
     pub pruned: usize,
 }
 
+/// Controls whether decay is applied during a `tick` cycle.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum DecayMode {
+    #[default]
+    Apply,
+    Skip,
+}
+
 /// Decay all edge weights by exp(-xi). [Hoya Eq 4.1]
 pub fn decay<K: Copy + Eq + Hash + Ord>(store: &mut impl EdgeStore<K>, cfg: &SokmConfig) -> usize {
     let factor = (-cfg.xi).exp();
@@ -123,14 +131,6 @@ pub fn propagate_soft<K: Copy + Eq + Hash + Ord>(
         }
     }
     spread.into_iter().collect()
-}
-
-/// Controls whether decay is applied during a `tick` cycle.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum DecayMode {
-    #[default]
-    Apply,
-    Skip,
 }
 
 /// One full SOKM cycle: decay -> strengthen -> prune. [Hoya Eqs 4.1, 4.6-4.7]
