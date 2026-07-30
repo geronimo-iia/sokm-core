@@ -66,6 +66,18 @@ The attentive condition is a single inequality: the system is attentive when the
 
 `sokm-emotion` implements this layer: per-kernel variables, global state update, attentive check, and three pluggable policies controlling whether the global state accumulates without bound (`IdentityPolicy` — exact Hoya), saturates at a defined range (`ClampPolicy`), or decays toward neutral during silence (`DecayPolicy`).
 
+### Gestalt K³ (Cross-modal memory)
+
+A single SOKM modality learns one kind of input. Two modalities, run in parallel, learn two kinds. But the interesting question is what happens *between* them.
+
+Hoya's AMS architecture proposes 14 cognitive modules — each a SOKM instance or variant — feeding into one another. Sensation informs perception, perception informs attention, attention shapes what gets remembered. The substrate is the same throughout; what differs is how modules couple.
+
+Gestalt K³ makes that coupling explicit. Two independent kernel graphs are linked by a directed bipartite cross-edge store. When kernels from both modalities fire at the same time — on inputs with matching class labels — the cross-edge between them strengthens. Same lifecycle as intra-modal links: decay passively, strengthen on co-activation, disappear when no longer used.
+
+The result is associative memory across sensory channels. Given a cue in one modality, the system propagates through learned cross-edges and recovers activations in the other. It does not look anything up — it reconstructs, from what it has learned to associate.
+
+`sokm-multimodal` implements this layer.
+
 ## When to use
 
 SOKM fits problems where:

@@ -14,8 +14,13 @@ sokm-kernel = { workspace = true }
 thiserror   = { workspace = true }
 
 [dev-dependencies]
+criterion   = { workspace = true }
 serde_json  = { workspace = true }
 rmp-serde   = { workspace = true }
+
+[[bench]]
+name    = "gestalt"
+harness = false
 
 [features]
 default = []

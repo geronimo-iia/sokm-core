@@ -80,6 +80,16 @@ for (kernel_idx, score) in &results {
 | `p1` | u64::MAX | Inactivity extinction period in ticks (default: disabled) |
 | `require_class_match` | true | Only same-class co-activations strengthen; `None`-labelled kernels never strengthen |
 
+## Benchmarks
+
+```bash
+cargo bench -p sokm-multimodal
+```
+
+Covers `gestalt_tick`, `recall_from_modal1`, and `recall_from_modal2` at 100/500/1k kernels
+per modality. `recall_from_modal2` is the O(E) reverse-scan path — benchmark it before
+considering a reverse-index optimisation.
+
 ## Crate map
 
 ```

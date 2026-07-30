@@ -119,6 +119,7 @@ cargo clippy --all-targets -- -D warnings          # must pass clean
 cargo doc --workspace --no-deps                    # rustdoc, zero warnings required
 cargo bench --workspace --no-run                   # verify benches compile
 cargo bench -p sokm-kernel --features simd         # SIMD scoring bench
+cargo bench -p sokm-multimodal                     # gestalt_tick, recall_from_modal1/2
 cargo publish --dry-run -p sokm                    # pre-release gate
 ```
 
