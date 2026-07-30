@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-30
+
 ### Added
 - `sokm-emotion` crate: per-kernel emotion variables, 2D global state `(E₁, E₂)`, attentive condition [Hoya Eqs. 10.6–10.8]
 - `GlobalEmotionPolicy` trait: `IdentityPolicy` (exact Hoya), `ClampPolicy`, `DecayPolicy`
