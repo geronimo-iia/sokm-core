@@ -1,9 +1,9 @@
 # SOKM Algorithm Reference
 
-Core algorithm for the Self-Organizing Kernel Machine, as implemented in `sokm` and `sokm-kernel`.
+Core algorithm for the Self-Organizing Kernel Machine, as implemented in `sokm`, `sokm-kernel`, and `sokm-emotion`.
 Equations reference Hoya (2005) — *Artificial Mind System: Kernel Memory Approach*, Springer.
 
-Upper-layer algorithms (emotion, multimodal, episodic memory) are out of scope for this crate.
+Upper-layer algorithms (multimodal, episodic memory) are out of scope for this workspace.
 
 ## 1. Kernel Activation [Eq 3.8]
 
@@ -138,7 +138,77 @@ o_STM[i] = λ · c_k[i] + (1 − λ) · x[i]
 
 All parameters except `q` require calibration against experiments — Hoya provides no concrete values for them.
 
+## 10. Emotion Module [Hoya Eqs. 10.6, 10.7, 10.8; pp. 212–221]
+
+Implemented in `sokm-emotion`. Wraps `KernelGraph` — zero changes to `sokm-kernel` internals.
+
+### Per-kernel emotion variables [Eq. 10.8]
+
+Each kernel `i` holds two variables `[e_i^1, e_i^2]` initialised to `[0, 0]`.
+Only the best-matching kernel (the one that fired) updates its vars each tick:
+
+```
+e_i^j(n+1) = e_i^j(n) + λ_e × (e_target^j − e_i^j(n))
+```
+
+`e_target` — caller-supplied emotional valence of the current input.
+`λ_e` — blend rate (`EmotionConfig::lambda_e`, default 0.1).
+
+### Global emotion state [Eq. 10.6]
+
+2D state `(E₁, E₂)` updated every tick from all kernels with score > 0:
+
+```
+E_i(n+1) = decay × E_i(n) + Σ_j  e_i^j · K_j(x)     [base: decay = 1.0]
+```
+
+`decay = policy.decay_factor()`:
+- `IdentityPolicy` → 1.0 (exact Hoya, compiler eliminates the multiply)
+- `DecayPolicy` → configurable `< 1.0`
+
+Scores `K_j(x)` are reused from `KernelTickReport::scores` — no second gaussian scan.
+
+### Attentive condition [Eq. 10.7]
+
+```
+attentive ⟺  Σ_i |E_i − E_i*| ≤ θ_E
+```
+
+`E_i*` — optimal emotion state (`EmotionConfig::optimal`, default `(0, 0)`).
+`θ_E` — threshold (`EmotionConfig::theta_e`, default 1.0).
+
+### Policy [INFERRED]
+
+Hoya gives no bounding rule. Three implementations:
+
+| Policy | `decay_factor()` | `apply()` | Source |
+|--------|-----------------|-----------|--------|
+| `IdentityPolicy` | 1.0 | passthrough | [DIRECT] |
+| `ClampPolicy` | 1.0 | clamp E₁∈[−3,3], E₂∈[−2,2] | [INFERRED] |
+| `DecayPolicy` | configurable | clamp after decay | [INFERRED] |
+
+### Salience [INFERRED]
+
+Per-kernel multiplier for emotion-weighted recall:
+
+```
+salience_i = max(0,  1 + α · (e_i^1 · E₁ + e_i^2 · E₂))
+```
+
+`α = 0.0` → emotion has no effect on recall (default). Defined in `sokm_emotion::query::salience`.
+
+### Emotion parameters
+
+| Param | Symbol | Default | Config |
+|---|---|---|---|
+| Blend rate | λ_e | 0.1 | `EmotionConfig` |
+| Attentive threshold | θ_E | 1.0 | `EmotionConfig` |
+| Optimal state | E_i* | (0, 0) | `EmotionConfig` |
+| Salience scale | α | 0.0 (disabled) | `EmotionConfig` |
+
+All defaults require empirical calibration — Hoya provides no concrete values.
+
 ## Reference
 
 Tetsuya Hoya (2005), *Artificial Mind System: Kernel Memory Approach*, Springer.
-Equations 3.8, 3.10, 4.1, 4.3–4.7, 10.5; §3.4, §4.3; pp. 40–99, 164.
+Equations 3.8, 3.10, 4.1, 4.3–4.7, 10.5, 10.6, 10.7, 10.8; §3.4, §4.3; pp. 40–99, 164, 212–221.

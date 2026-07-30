@@ -2,7 +2,7 @@
 
 Architectural decisions and their rationale, grouped by release.
 
-This file covers decisions that are intrinsic to the `sokm` and `sokm-kernel` crates.
+This file covers decisions intrinsic to the `sokm`, `sokm-kernel`, and `sokm-emotion` crates.
 Decisions for upper layers (memory, store, encoder, MCP) are out of scope for this repo.
 
 ## v0.1.0 — 2026-07-22
@@ -33,3 +33,11 @@ Decisions for upper layers (memory, store, encoder, MCP) are out of scope for th
 | -------- | ------- |
 | [link-lifecycle](0.1.0/link-lifecycle.md) | decay/prune/scale_all are three separate operations — exponential decay, two-phase prune, scale_all pure multiply |
 | [class-semantics](0.1.0/class-semantics.md) | sokm class-agnostic; class filtering in KernelGraph::tick; require_class_match = true by default |
+
+## v0.2.0 — 2026-07-30
+
+### Architecture
+
+| Decision | Summary |
+| -------- | ------- |
+| [configured-emotional-tick-report](0.2.0/configured-emotional-tick-report.md) | `DefaultEmotionalGraph` stores config internally; `tick` returns `salience_scores` in report — empty when alpha==0.0, zero allocation |
