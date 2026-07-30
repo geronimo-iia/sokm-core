@@ -54,8 +54,10 @@ fn main() {
     // Top results must differ between A1 and B1 cues
     let top_a1 = r1[0].0;
     let top_b1 = r2[0].0;
-    assert_ne!(top_a1, top_b1,
-        "A1 and B1 cues both resolved to modal2 kernel[{top_a1}] — cross-modal separation failed");
+    assert_ne!(
+        top_a1, top_b1,
+        "A1 and B1 cues both resolved to modal2 kernel[{top_a1}] — cross-modal separation failed"
+    );
 
     // Reverse recall: modal2 cue A2 → should recover modal1 A1 kernel
     let mut r3 = g.recall_from_modal2(&a2, &cfg);
@@ -67,7 +69,10 @@ fn main() {
     assert!(!r3.is_empty(), "recall_from_modal2 returned empty");
 
     // Cross edge density check
-    assert!(g.cross_edge_count() > 0, "no cross-modal edges formed after 500 ticks");
+    assert!(
+        g.cross_edge_count() > 0,
+        "no cross-modal edges formed after 500 ticks"
+    );
 
     println!("\nAll convergence checks passed.");
 }
