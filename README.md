@@ -149,6 +149,24 @@ println!("attentive={} E1={:.3} E2={:.3}", r.attentive, r.global.e1, r.global.e2
 
 See also: [emotional_learning](crates/sokm-emotion/examples/emotional_learning.rs) — two clusters with opposite valences, [policy_comparison](crates/sokm-emotion/examples/policy_comparison.rs) — `IdentityPolicy` vs `ClampPolicy` vs `DecayPolicy`.
 
+**Cross-modal layer** — associate two modalities via Gestalt K³:
+
+```rust
+use sokm::{DecayMode, HashEdgeStore};
+use sokm_multimodal::{DefaultGestaltGraph, GestaltConfig};
+
+let cfg = GestaltConfig::default();
+let mut g = DefaultGestaltGraph::new(HashEdgeStore::new(), HashEdgeStore::new(), &cfg);
+
+// tick couples two inputs — cross-edges grow when both modalities co-activate
+g.tick(&[1.0, 0.0, 0.0, 0.0], &[0.0, 1.0, 0.0, 0.0], Some(0), 0, &cfg, DecayMode::Apply);
+
+// recall: modal1 cue → matching modal2 activations via learned cross-edges
+let results = g.recall_from_modal1(&[1.0, 0.0, 0.0, 0.0], &cfg);
+```
+
+See also: [convergence](crates/sokm-multimodal/examples/convergence.rs) — two-class separation across modalities, [compact_lifecycle](crates/sokm-multimodal/examples/compact_lifecycle.rs) — extinct kernel pruning and reindex.
+
 ## MSRV
 
 Rust 1.95 (stable). No nightly required.
