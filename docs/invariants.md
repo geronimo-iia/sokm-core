@@ -186,3 +186,16 @@ pattern from being introduced).
 - `sokm-emotion/src/graph.rs` — `tick()` uses `report.scores` directly at
   Step 3 (`update_global_emotion(&report.scores, ...)`).
 - `sokm-kernel/src/graph.rs` — `KernelTickReport::scores` field doc comment.
+
+---
+
+## Cross-modal invariants (sokm-multimodal)
+
+**#8** `cross.edge_count()` equals `weights.len()` in `CrossEdgeStore` at all times.
+Edges exist iff `weight > 0.0`. `set(i, j, 0.0)` removes the entry.
+
+**#9** After `compact()`, no cross edge references an extinct kernel index.
+`reindex` is called with both compact maps; edges with `None` in either map are dropped.
+
+**#10** `touch(i, j, tick)` is a no-op when edge (i, j) has no weight entry.
+Never creates a phantom tick entry for a non-existent edge.

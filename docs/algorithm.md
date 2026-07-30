@@ -208,6 +208,25 @@ salience_i = max(0,  1 + α · (e_i^1 · E₁ + e_i^2 · E₂))
 
 All defaults require empirical calibration — Hoya provides no concrete values.
 
+## 11. Gestalt K³ — Cross-modal equations [INFERRED]
+
+Cross-modal propagation extends Hoya Eqs. 4.1, 4.3, 4.7 across modality boundaries.
+Not a verbatim Hoya theorem — labelled [INFERRED].
+
+**Cross-modal soft propagation** (modal1 → modal2):
+`modal2[j] += γ · w_ij · score_i`  for all i where score_i > 0.
+[Hoya Eq. 4.3 applied cross-modally] [INFERRED]
+
+**Cross-modal Hebbian strengthen**: δ added to w_ij when modal1[i] and modal2[j]
+co-activate (same class label). First co-activation creates edge at w_init.
+[Hoya Eq. 4.7 applied cross-modally] [INFERRED]
+
+**Cross-modal decay**: all edge weights multiplied by `exp(-ξ)` each tick.
+[Hoya Eq. 4.1 applied cross-modally] [INFERRED]
+
+**Inactivity pruning**: edge (i,j) removed if `current_tick - last_active > p1`.
+[Hoya Rule 3] [INFERRED]
+
 ## Reference
 
 Tetsuya Hoya (2005), *Artificial Mind System: Kernel Memory Approach*, Springer.
