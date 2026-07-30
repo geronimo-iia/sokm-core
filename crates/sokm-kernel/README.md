@@ -121,9 +121,8 @@ Intended for use with Instruments CPU Profiler or `perf`.
 ```
 sokm              ← link layer                        [sokm-core]
 sokm-kernel       ← kernel units, growth, STM (this crate) [sokm-core]
-sokm-multimodal   ← Gestalt K³ cross-modal memory
-sokm-emotion      ← emotional state layer
-sokm-memory       ← persistent episodic memory store
+sokm-emotion      ← per-kernel emotion variables, global state [sokm-core]
+sokm-multimodal   ← Gestalt K³ cross-modal memory           [sokm-core]
 ```
 
 ## Design notes

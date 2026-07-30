@@ -154,8 +154,7 @@ Attentive after silence:
 sokm              ← link layer                              [sokm-core]
 sokm-kernel       ← kernel units, growth, STM               [sokm-core]
 sokm-emotion      ← per-kernel emotion variables, global state (this crate) [sokm-core]
-sokm-multimodal   ← Gestalt K³ cross-modal memory
-sokm-memory       ← persistent episodic memory store
+sokm-multimodal   ← Gestalt K³ cross-modal memory           [sokm-core]
 ```
 
 ## API

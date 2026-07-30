@@ -33,7 +33,7 @@ Layer 1   sokm-kernel   — kernel units, activation, growth, STM, KernelGraph
 Layer 2   sokm-emotion  — per-kernel emotion vars, global state, policy
 ```
 
-Upper layers (`sokm-multimodal`, `sokm-memory`, …) are out of scope for this repo.
+Layer 3   sokm-multimodal — Gestalt K³ cross-modal memory
 
 ## Crate responsibilities
 

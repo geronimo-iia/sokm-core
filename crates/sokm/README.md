@@ -108,9 +108,8 @@ Covers `tick`, `decay`, `strengthen`, `prune`, `propagate_soft`, and
 ```
 sokm              ← link layer (this crate)          [sokm-core]
 sokm-kernel       ← kernel units, growth, STM        [sokm-core]
-sokm-multimodal   ← Gestalt K³ cross-modal memory
-sokm-emotion      ← emotional state layer
-sokm-memory       ← persistent episodic memory store
+sokm-emotion      ← per-kernel emotion variables, global state [sokm-core]
+sokm-multimodal   ← Gestalt K³ cross-modal memory    [sokm-core]
 ```
 
 ## Design notes
