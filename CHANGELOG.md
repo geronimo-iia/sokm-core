@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-30
+
+### Added
+- `sokm-multimodal` crate: Gestalt K³ cross-modal memory — two modalities coupled via directed bipartite cross-edge store
+- `GestaltKernelGraph<S1, S2, K1, K2>`: generic cross-modal graph; `DefaultGestaltGraph` concrete alias
+- `GestaltConfig`, `CrossSokmConfig`, `CrossConfigError`: cross-modal configuration and validation
+- `CrossStore` trait, `CrossEdgeStore`: HashMap-backed directed bipartite edge store
+- `cross_propagate_soft`, `cross_propagate_soft_reverse`, `cross_strengthen_deltas`: free-function primitives
+- Cross-modal invariants (#8–#10), equations, and integration decision doc in `docs/`
+
+### Changed
+- Workspace version bumped to `0.3.0`
+
 ## [0.2.0] - 2026-07-30
 
 ### Added
