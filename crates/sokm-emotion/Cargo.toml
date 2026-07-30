@@ -1,5 +1,6 @@
 [package]
 name              = "sokm-emotion"
+description       = "SOKM emotion layer: per-kernel variables, 2D global state, attentive condition [Hoya Eqs. 10.6–10.8]"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
