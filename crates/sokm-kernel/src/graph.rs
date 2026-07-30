@@ -22,6 +22,9 @@ pub struct KernelTickReport {
     pub newly_labelled: usize,
     /// Gaussian scores for all kernels this tick. Vec moved out of tick on every call;
     /// ignore if unused — no allocation cost if caller drops immediately.
+    ///
+    /// INVARIANT: consumed by `EmotionalKernelGraph::tick` for `update_global_emotion` —
+    /// never recompute gaussian scores on the same input in the emotion layer.
     pub scores: Vec<f64>,
 }
 

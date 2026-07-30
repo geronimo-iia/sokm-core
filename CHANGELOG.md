@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `sokm-emotion` crate: per-kernel emotion variables, 2D global state `(E₁, E₂)`, attentive condition [Hoya Eqs. 10.6–10.8]
+- `GlobalEmotionPolicy` trait: `IdentityPolicy` (exact Hoya), `ClampPolicy`, `DecayPolicy`
+- `salience()` for emotion-weighted recall scoring
+- Two examples: `emotional_learning`, `policy_comparison`
+- Emotion invariants, equations, and decision doc in `docs/`
+- `examples compile` step in pre-release checklist
+
+### Changed
+- Workspace version bumped to `0.2.0`
+
 ## [0.1.1] - 2026-07-30
 
 ### Changed

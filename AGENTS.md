@@ -4,7 +4,7 @@ Core primitives for SOKM (Self-Organizing Kernel Memory).
 Reference: Tetsuya Hoya (2005), *Artificial Mind System: Kernel Memory Approach*.
 
 **Before changing any algorithm or API:** read `docs/algorithm.md` (equations, tick loop order)
-and `docs/invariants.md` (invariants that must hold across both crates).
+and `docs/invariants.md` (invariants that must hold across all crates).
 This file is a quick-reference — those two are authoritative.
 
 ## Workspace layout
@@ -13,6 +13,7 @@ This file is a quick-reference — those two are authoritative.
 crates/
   sokm/           # link layer — decay, strengthen, prune, propagate
   sokm-kernel/    # kernel layer — activation, growth, STM, KernelGraph
+  sokm-emotion/   # emotion layer — per-kernel vars, global state, policy
 docs/
   algorithm.md    # Hoya equations, tick loop steps — READ FIRST
   invariants.md   # cross-crate invariants — READ FIRST
@@ -23,15 +24,16 @@ docs/
 
 ## Crate layers
 
-`sokm` is the leaf. `sokm-kernel` depends on `sokm`. Changing a public API in `sokm`
-breaks `sokm-kernel` — run `cargo build --workspace` after any API change.
+`sokm` is the leaf. Changing a public API at layer N breaks all crates above it —
+run `cargo build --workspace` after any API change.
 
 ```
 Layer 0   sokm          — Hebbian link mechanics; no kernel or class knowledge
 Layer 1   sokm-kernel   — kernel units, activation, growth, STM, KernelGraph
+Layer 2   sokm-emotion  — per-kernel emotion vars, global state, policy
 ```
 
-Upper layers (`sokm-multimodal`, `sokm-emotion`, `sokm-memory`, …) are out of scope for this repo.
+Upper layers (`sokm-multimodal`, `sokm-memory`, …) are out of scope for this repo.
 
 ## Crate responsibilities
 
@@ -41,6 +43,9 @@ Upper layers (`sokm-multimodal`, `sokm-emotion`, `sokm-memory`, …) are out of 
   `KernelGraph` is the stateful wrapper combining all steps into one `tick()` call.
   Free functions (`compute_scores`, `best_match`, `should_grow_direct`) are pure and testable
   in isolation.
+- **`sokm-emotion`** — per-kernel emotion variables and global 2D mood state. Wraps `KernelGraph`
+  without modifying it. `EmotionalKernelGraph` fields are `pub(crate)` — use accessors.
+  `serde` feature required for snapshot use.
 
 ## Design invariants — do not change without understanding these
 
@@ -65,6 +70,11 @@ Full rationale: `docs/invariants.md` and `docs/decisions/`.
   `assert_eq!` in `blend_output`.
 - **`compute_scores` finite inputs**: NaN in `x` propagates silently through Gaussian scoring.
   Guarded by `debug_assert!` in `compute_scores`.
+- **`EmotionStore` length == `kernel_count()`**: `emotions.push` is called exactly when
+  `report.grew` is true. Mismatch silently corrupts per-kernel emotion reads and salience.
+  Guarded by `debug_assert_eq!` at end of `EmotionalKernelGraph::tick`.
+- **`KernelTickReport::scores` reuse**: `EmotionalKernelGraph::tick` must use `report.scores`
+  for `update_global_emotion` — never recompute gaussian scores on the same input.
 
 ## Hoya equation quick-reference
 
@@ -80,6 +90,9 @@ Full derivations: `docs/algorithm.md`.
 | 4.6–4.7 | Strengthen piecewise, `w_init`/`w_max` | `sokm::strengthen` |
 | 10.5 | `o_STM = λ·c_k + (1-λ)·x` | `Stm::blend_output` |
 | p.164 | STM eviction = min ε | `Stm::update` |
+| 10.6 | `E_i(n+1) = Σ_j e_i^j · K_j(x)` | `update_global_emotion` |
+| 10.7 | `Σ|E_i − E_i*| ≤ θ_E` | `is_attentive` |
+| 10.8 | `e_i^j += λ_e·(e_target − e_i^j)` | `update_kernel_emotion_var` |
 
 ## Toolchain
 
@@ -93,6 +106,7 @@ Full derivations: `docs/algorithm.md`.
 cargo test --workspace                             # full test suite
 cargo test -p sokm                                 # link layer only
 cargo test -p sokm-kernel                          # kernel layer only
+cargo test -p sokm-emotion                         # emotion layer only
 cargo test --workspace --features sokm-kernel/simd # with SIMD scoring path
 cargo fmt --all -- --check                         # must pass clean
 cargo clippy --all-targets -- -D warnings          # must pass clean
@@ -106,5 +120,5 @@ cargo publish --dry-run -p sokm                    # pre-release gate
 
 Conventional commits, single line: `type(scope): short description`
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `bench`, `ci`, `chore`, `perf`
-Scopes: `sokm`, `kernel`, `sparse`, `stm`, `graph`, `growth`, `query`, `ops`, `workspace`
+Scopes: `sokm`, `kernel`, `emotion`, `sparse`, `stm`, `graph`, `growth`, `query`, `ops`, `workspace`
 One commit per plan task.
