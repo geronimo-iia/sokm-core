@@ -1,13 +1,13 @@
 use crate::config::CrossSokmConfig;
 
 pub trait CrossStore {
-    /// Weight of directed edge modal1[i] → modal2[j]. 0.0 if absent.
+    /// Weight of directed edge modal1\[i\] → modal2\[j\]. 0.0 if absent.
     fn get(&self, i: usize, j: usize) -> f64;
     /// Set edge weight. `w <= 0.0` removes the edge (both weight and tick entries).
     fn set(&mut self, i: usize, j: usize, w: f64);
-    /// All modal2 targets reachable from modal1[i], with weights.
+    /// All modal2 targets reachable from modal1\[i\], with weights.
     fn targets(&self, i: usize) -> Vec<(usize, f64)>;
-    /// All modal1 sources that reach modal2[j], with weights.
+    /// All modal1 sources that reach modal2\[j\], with weights.
     /// O(E) scan — no reverse index. Acceptable for current scale.
     fn sources(&self, j: usize) -> Vec<(usize, f64)>;
     /// Mark edge (i, j) as active at `tick`. `0` is the sentinel meaning "never touched".
@@ -201,8 +201,8 @@ impl CrossStore for CrossEdgeStore {
 }
 
 /// Propagate soft activation from modal1 into modal2 space via cross-modal edges.
-/// All modal1 kernels with score > 0 contribute: modal2[j] += γ · w_ij · score_i.
-/// [Hoya Eq. 4.3 applied cross-modally] [INFERRED]
+/// All modal1 kernels with score > 0 contribute: modal2\[j\] += γ · w_ij · score_i.
+/// \[Hoya Eq. 4.3 applied cross-modally\] \[INFERRED\]
 pub fn cross_propagate_soft(
     cross: &impl CrossStore,
     modal1_scores: &[(usize, f64)],
@@ -218,7 +218,7 @@ pub fn cross_propagate_soft(
 }
 
 /// Reverse propagation: modal2 activations → modal1 space via cross-modal edges.
-/// modal1[i] += γ · w_ij · score_j for all (i, j) where j is active in modal2.
+/// modal1\[i\] += γ · w_ij · score_j for all (i, j) where j is active in modal2.
 /// Symmetric counterpart to [`cross_propagate_soft`].
 pub fn cross_propagate_soft_reverse(
     cross: &impl CrossStore,

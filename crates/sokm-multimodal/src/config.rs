@@ -16,7 +16,7 @@ impl GestaltConfig {
 }
 
 /// Hebbian parameters for cross-modal edges. Independent of intra-modal SokmConfig.
-/// [Hoya pp. 60–79; same three-rule Hebbian update as intra-modal] [INFERRED]
+/// \[Hoya pp. 60–79; same three-rule Hebbian update as intra-modal\] \[INFERRED\]
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CrossSokmConfig {
