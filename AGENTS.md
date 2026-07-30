@@ -47,6 +47,30 @@ Upper layers (`sokm-multimodal`, `sokm-memory`, …) are out of scope for this r
   without modifying it. `EmotionalKernelGraph` fields are `pub(crate)` — use accessors.
   `serde` feature required for snapshot use.
 
+## sokm-multimodal
+
+Gestalt K³ cross-modal associative memory. Two modalities coupled via a directed bipartite
+cross-edge store. \[INFERRED\] — Hoya Eqs. 4.1, 4.3, 4.7 applied cross-modally.
+
+**Main struct:** `GestaltKernelGraph<S1, S2, K1, K2>` — generic over both edge stores and both
+kernel stores. `DefaultGestaltGraph` = concrete alias with `HashEdgeStore<usize>` + `DefaultKernelStore`.
+
+**Config:** `GestaltConfig { sokm: SokmConfig, kernel: KernelConfig, cross: CrossSokmConfig }`.
+`CrossSokmConfig` controls: `gamma` (propagation attenuation), `delta` (Hebbian increment),
+`w_init`/`w_max` (edge weight bounds), `xi` (decay per tick), `p1` (inactivity extinction),
+`require_class_match` (default true).
+
+**Tick sequence:** `modal1.tick` → `modal2.tick` → score both → cross `strengthen` →
+`scale_all` (decay) → `prune_below` (weight) → `prune_inactive` (inactivity).
+
+**Recall:** `recall_from_modal1(x1)` → modal2 activations via `cross_propagate_soft`.
+`recall_from_modal2(x2)` → modal1 activations via `cross_propagate_soft_reverse` (O(E) scan).
+
+**Commit scope:** `feat(multimodal):`, `fix(multimodal):`, `refactor(multimodal):`.
+
+**Known limitation:** `CrossEdgeStore::sources()` is O(E) full scan — no reverse index.
+Acceptable at current scale. See `.claude/note-sources-o-e-reverse-scan.md`.
+
 ## Design invariants — do not change without understanding these
 
 Full rationale: `docs/invariants.md` and `docs/decisions/`.
