@@ -3,6 +3,11 @@
 Core primitives for SOKM (Self-Organizing Kernel Memory) — incremental associative learning without backprop or batch training.
 
 [![CI](https://github.com/geronimo-iia/sokm-core/actions/workflows/ci.yml/badge.svg)](https://github.com/geronimo-iia/sokm-core/actions/workflows/ci.yml)
+[![crates.io sokm](https://img.shields.io/crates/v/sokm.svg)](https://crates.io/crates/sokm)
+[![crates.io sokm-kernel](https://img.shields.io/crates/v/sokm-kernel.svg)](https://crates.io/crates/sokm-kernel)
+[![docs.rs sokm](https://docs.rs/sokm/badge.svg)](https://docs.rs/sokm)
+[![docs.rs sokm-kernel](https://docs.rs/sokm-kernel/badge.svg)](https://docs.rs/sokm-kernel)
+[![MSRV: 1.95](https://img.shields.io/badge/rustc-1.95+-blue.svg)](https://blog.rust-lang.org/2025/05/15/Rust-1.95.0.html)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
 
 ## Background
