@@ -90,6 +90,21 @@ Covers `gestalt_tick`, `recall_from_modal1`, and `recall_from_modal2` at 100/500
 per modality. `recall_from_modal2` is the O(E) reverse-scan path — benchmark it before
 considering a reverse-index optimisation.
 
+## Examples
+
+```bash
+cargo run -p sokm-multimodal --example convergence
+```
+
+Trains two 4D class clusters (class 0: A1↔A2, class 1: B1↔B2) for 500 ticks and verifies
+cross-modal recall separates the two classes in both directions.
+
+```bash
+cargo run -p sokm-multimodal --example kernel_count
+```
+
+Reports actual kernel counts vs tick counts at varying scales — useful for calibrating bench fixtures.
+
 ## Crate map
 
 ```
