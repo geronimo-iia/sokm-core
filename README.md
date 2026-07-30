@@ -6,6 +6,8 @@ Core primitives for SOKM (Self-Organizing Kernel Memory) — incremental associa
 [![crates.io sokm](https://img.shields.io/crates/v/sokm.svg)](https://crates.io/crates/sokm)
 [![crates.io sokm-kernel](https://img.shields.io/crates/v/sokm-kernel.svg)](https://crates.io/crates/sokm-kernel)
 [![crates.io sokm-emotion](https://img.shields.io/crates/v/sokm-emotion.svg)](https://crates.io/crates/sokm-emotion)
+[![sokm-multimodal crates.io](https://img.shields.io/crates/v/sokm-multimodal.svg)](https://crates.io/crates/sokm-multimodal)
+[![sokm-multimodal docs.rs](https://docs.rs/sokm-multimodal/badge.svg)](https://docs.rs/sokm-multimodal)
 [![docs.rs sokm](https://docs.rs/sokm/badge.svg)](https://docs.rs/sokm)
 [![docs.rs sokm-kernel](https://docs.rs/sokm-kernel/badge.svg)](https://docs.rs/sokm-kernel)
 [![docs.rs sokm-emotion](https://docs.rs/sokm-emotion/badge.svg)](https://docs.rs/sokm-emotion)
@@ -64,6 +66,18 @@ The attentive condition is a single inequality: the system is attentive when the
 
 `sokm-emotion` implements this layer: per-kernel variables, global state update, attentive check, and three pluggable policies controlling whether the global state accumulates without bound (`IdentityPolicy` — exact Hoya), saturates at a defined range (`ClampPolicy`), or decays toward neutral during silence (`DecayPolicy`).
 
+### Gestalt K³ (Cross-modal memory)
+
+A single SOKM modality learns one kind of input. Two modalities, run in parallel, learn two kinds. But the interesting question is what happens *between* them.
+
+Hoya's AMS architecture proposes 14 cognitive modules — each a SOKM instance or variant — feeding into one another. Sensation informs perception, perception informs attention, attention shapes what gets remembered. The substrate is the same throughout; what differs is how modules couple.
+
+Gestalt K³ makes that coupling explicit. Two independent kernel graphs are linked by a directed bipartite cross-edge store. When kernels from both modalities fire at the same time — on inputs with matching class labels — the cross-edge between them strengthens. Same lifecycle as intra-modal links: decay passively, strengthen on co-activation, disappear when no longer used.
+
+The result is associative memory across sensory channels. Given a cue in one modality, the system propagates through learned cross-edges and recovers activations in the other. It does not look anything up — it reconstructs, from what it has learned to associate.
+
+`sokm-multimodal` implements this layer.
+
 ## When to use
 
 SOKM fits problems where:
@@ -80,8 +94,9 @@ If you have a fixed dataset and a training budget, a neural net will outperform 
 | [`sokm`](crates/sokm/) | Hebbian link layer — decay, strengthen, prune, propagate |
 | [`sokm-kernel`](crates/sokm-kernel/) | Kernel layer — activation, growth, STM, KernelGraph |
 | [`sokm-emotion`](crates/sokm-emotion/) | Emotion layer — per-kernel vars, global (E₁,E₂) state, attentive condition |
+| [`sokm-multimodal`](crates/sokm-multimodal) | Gestalt K³ cross-modal memory — two SOKM modalities coupled via directed bipartite cross-edge store |
 
-Upper layers — multimodal, episodic memory — are built on top of these primitives and live elsewhere.
+Upper layers — episodic memory — are built on top of these primitives and live elsewhere.
 
 ## Documentation
 
@@ -95,7 +110,8 @@ Upper layers — multimodal, episodic memory — are built on top of these primi
 [dependencies]
 sokm = "0.2"
 sokm-kernel = "0.2"
-sokm-emotion = "0.2"   # optional — emotion layer
+sokm-emotion = "0.2"        # optional — emotion layer
+sokm-multimodal = "0.3"     # optional — cross-modal Gestalt K³ memory
 ```
 
 **Kernel layer** — grow and activate kernels:
@@ -132,6 +148,24 @@ println!("attentive={} E1={:.3} E2={:.3}", r.attentive, r.global.e1, r.global.e2
 ```
 
 See also: [emotional_learning](crates/sokm-emotion/examples/emotional_learning.rs) — two clusters with opposite valences, [policy_comparison](crates/sokm-emotion/examples/policy_comparison.rs) — `IdentityPolicy` vs `ClampPolicy` vs `DecayPolicy`.
+
+**Cross-modal layer** — associate two modalities via Gestalt K³:
+
+```rust
+use sokm::{DecayMode, HashEdgeStore};
+use sokm_multimodal::{DefaultGestaltGraph, GestaltConfig};
+
+let cfg = GestaltConfig::default();
+let mut g = DefaultGestaltGraph::new(HashEdgeStore::new(), HashEdgeStore::new(), &cfg);
+
+// tick couples two inputs — cross-edges grow when both modalities co-activate
+g.tick(&[1.0, 0.0, 0.0, 0.0], &[0.0, 1.0, 0.0, 0.0], Some(0), 0, &cfg, DecayMode::Apply);
+
+// recall: modal1 cue → matching modal2 activations via learned cross-edges
+let results = g.recall_from_modal1(&[1.0, 0.0, 0.0, 0.0], &cfg);
+```
+
+See also: [convergence](crates/sokm-multimodal/examples/convergence.rs) — two-class separation across modalities, [compact_lifecycle](crates/sokm-multimodal/examples/compact_lifecycle.rs) — extinct kernel pruning and reindex.
 
 ## MSRV
 

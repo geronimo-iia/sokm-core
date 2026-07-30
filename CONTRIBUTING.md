@@ -54,6 +54,7 @@ Benchmark results are not committed. Record significant results manually in a PR
 | `sokm` | Link layer — Hebbian mechanics (EdgeStore, decay, strengthen, prune, propagate, tick) |
 | `sokm-kernel` | Kernel units, growth, STM, class inheritance |
 | `sokm-emotion` | Per-kernel emotion variables, global 2D state, attentive condition, policy |
+| `sokm-multimodal` | Gestalt K³ — two modalities coupled via cross-edge store |
 
 ## Feature flags
 
@@ -64,6 +65,8 @@ Benchmark results are not committed. Record significant results manually in a PR
 | `serde` | `sokm` | `Serialize`/`Deserialize` on all public types | off |
 | `serde` | `sokm-kernel` | `Serialize`/`Deserialize` on all public types | off |
 | `serde` | `sokm-emotion` | `Serialize`/`Deserialize` on all public types | off |
+| `serde` | `sokm-multimodal` | `Serialize`/`Deserialize` on all public types | off |
+| `simd`  | `sokm-multimodal` | Delegates to `sokm-kernel/simd` | off |
 
 ## Commit style
 
@@ -108,19 +111,19 @@ Hotfixes branch from the relevant tag and merge back to `main`.
 - [ ] Release build clean: `cargo build --workspace --release --locked`
 - [ ] Examples compile: `cargo build --workspace --examples`
 - [ ] Bench compiles: `cargo bench --workspace --all-features --no-run`
-- [ ] Dry-run publish: `cargo release --dry-run` (publishes `sokm` → `sokm-kernel` → `sokm-emotion`)
+- [ ] Dry-run publish: `cargo release --dry-run` (publishes `sokm` → `sokm-kernel` → `sokm-emotion` → `sokm-multimodal`)
 - [ ] `CHANGELOG.md` section dated and complete
 - [ ] Public types have `///` rustdoc; `cargo doc --workspace --no-deps --all-features` zero warnings
 - [ ] Version bumped in workspace `Cargo.toml`, `Cargo.lock` updated
 
 ### Tagging and publishing
 
-`release.toml` configures tag format (`vX.Y.Z`). Publish order follows the dependency graph: `sokm` → `sokm-kernel` → `sokm-emotion`.
+`release.toml` configures tag format (`vX.Y.Z`). Publish order follows the dependency graph: `sokm` → `sokm-kernel` → `sokm-emotion` → `sokm-multimodal`.
 
 ```bash
 # 1. Bump version in Cargo.toml, update CHANGELOG date
 # Edit Cargo.toml: version = "X.Y.Z"
-cargo update -p sokm -p sokm-kernel -p sokm-emotion
+cargo update -p sokm -p sokm-kernel -p sokm-emotion -p sokm-multimodal
 
 # 2. Commit on release branch, push, open PR
 git commit -am "chore: release vX.Y.Z"

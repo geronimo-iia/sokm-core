@@ -1,0 +1,36 @@
+[package]
+name              = "sokm-multimodal"
+description       = "SOKM multi-modal associative memory: Gestalt K³ cross-modal learning [Hoya Eqs. 4.1, 4.3, 4.7 — INFERRED cross-modal extension]"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+sokm        = { workspace = true }
+sokm-kernel = { workspace = true }
+thiserror   = { workspace = true }
+
+[dev-dependencies]
+criterion   = { workspace = true }
+serde_json  = { workspace = true }
+rmp-serde   = { workspace = true }
+
+[[bench]]
+name    = "gestalt"
+harness = false
+
+[features]
+default = []
+serde   = ["dep:serde", "dep:rmp-serde", "sokm-kernel/serde", "sokm/serde"]
+simd    = ["sokm-kernel/simd"]
+
+[dependencies.serde]
+workspace = true
+optional  = true
+
+[dependencies.rmp-serde]
+workspace = true
+optional  = true

@@ -11,9 +11,10 @@ This file is a quick-reference — those two are authoritative.
 
 ```
 crates/
-  sokm/           # link layer — decay, strengthen, prune, propagate
-  sokm-kernel/    # kernel layer — activation, growth, STM, KernelGraph
-  sokm-emotion/   # emotion layer — per-kernel vars, global state, policy
+  sokm/            # link layer — decay, strengthen, prune, propagate
+  sokm-kernel/     # kernel layer — activation, growth, STM, KernelGraph
+  sokm-emotion/    # emotion layer — per-kernel vars, global state, policy
+  sokm-multimodal/ # multimodal layer — Gestalt K³ cross-modal memory
 docs/
   algorithm.md    # Hoya equations, tick loop steps — READ FIRST
   invariants.md   # cross-crate invariants — READ FIRST
@@ -28,12 +29,11 @@ docs/
 run `cargo build --workspace` after any API change.
 
 ```
-Layer 0   sokm          — Hebbian link mechanics; no kernel or class knowledge
-Layer 1   sokm-kernel   — kernel units, activation, growth, STM, KernelGraph
-Layer 2   sokm-emotion  — per-kernel emotion vars, global state, policy
+Layer 0   sokm           — Hebbian link mechanics; no kernel or class knowledge
+Layer 1   sokm-kernel    — kernel units, activation, growth, STM, KernelGraph
+Layer 2   sokm-emotion   — per-kernel emotion vars, global state, policy
+Layer 3   sokm-multimodal — Gestalt K³ cross-modal memory
 ```
-
-Upper layers (`sokm-multimodal`, `sokm-memory`, …) are out of scope for this repo.
 
 ## Crate responsibilities
 
@@ -46,6 +46,11 @@ Upper layers (`sokm-multimodal`, `sokm-memory`, …) are out of scope for this r
 - **`sokm-emotion`** — per-kernel emotion variables and global 2D mood state. Wraps `KernelGraph`
   without modifying it. `EmotionalKernelGraph` fields are `pub(crate)` — use accessors.
   `serde` feature required for snapshot use.
+- **`sokm-multimodal`** — Gestalt K³: two `KernelGraph` modalities coupled via `CrossEdgeStore`
+  (directed bipartite, Hebbian lifecycle). `GestaltKernelGraph<S1,S2,K1,K2>`; `DefaultGestaltGraph`
+  is the concrete alias. Tick: `modal1.tick` → `modal2.tick` → cross strengthen → decay → prune.
+  Recall: `recall_from_modal1` / `recall_from_modal2`. Cross-modal propagation is \[INFERRED\] —
+  Hoya Eqs. 4.1, 4.3, 4.7 applied cross-modally. `sources()` is O(E) — see `.claude/note-sources-o-e-reverse-scan.md`.
 
 ## Design invariants — do not change without understanding these
 
@@ -107,12 +112,14 @@ cargo test --workspace                             # full test suite
 cargo test -p sokm                                 # link layer only
 cargo test -p sokm-kernel                          # kernel layer only
 cargo test -p sokm-emotion                         # emotion layer only
+cargo test -p sokm-multimodal                      # multimodal layer only
 cargo test --workspace --features sokm-kernel/simd # with SIMD scoring path
 cargo fmt --all -- --check                         # must pass clean
 cargo clippy --all-targets -- -D warnings          # must pass clean
 cargo doc --workspace --no-deps                    # rustdoc, zero warnings required
 cargo bench --workspace --no-run                   # verify benches compile
 cargo bench -p sokm-kernel --features simd         # SIMD scoring bench
+cargo bench -p sokm-multimodal                     # gestalt_tick, recall_from_modal1/2
 cargo publish --dry-run -p sokm                    # pre-release gate
 ```
 
@@ -120,5 +127,5 @@ cargo publish --dry-run -p sokm                    # pre-release gate
 
 Conventional commits, single line: `type(scope): short description`
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `bench`, `ci`, `chore`, `perf`
-Scopes: `sokm`, `kernel`, `emotion`, `sparse`, `stm`, `graph`, `growth`, `query`, `ops`, `workspace`
+Scopes: `sokm`, `kernel`, `emotion`, `multimodal`, `sparse`, `stm`, `graph`, `growth`, `query`, `ops`, `workspace`
 One commit per plan task.
