@@ -18,20 +18,6 @@ pub struct SokmConfig {
     pub p1: u64,
 }
 
-impl Default for SokmConfig {
-    fn default() -> Self {
-        Self {
-            xi: 0.01,
-            delta: 0.05,
-            w_init: 0.1,
-            w_max: 1.0,
-            min_weight: 0.001,
-            gamma: 0.9,
-            p1: 100,
-        }
-    }
-}
-
 /// Validation error for `SokmConfig` parameters.
 #[derive(Debug, thiserror::Error)]
 pub enum SokmConfigError {
@@ -69,6 +55,20 @@ impl std::fmt::Display for SokmConfigWarning {
                 f,
                 "min_weight ({min_weight}) >= w_max ({w_max}): all edges will be pruned immediately"
             ),
+        }
+    }
+}
+
+impl Default for SokmConfig {
+    fn default() -> Self {
+        Self {
+            xi: 0.01,
+            delta: 0.05,
+            w_init: 0.1,
+            w_max: 1.0,
+            min_weight: 0.001,
+            gamma: 0.9,
+            p1: 100,
         }
     }
 }

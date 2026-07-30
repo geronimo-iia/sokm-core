@@ -39,7 +39,7 @@ pub fn compact(x: &[f64], centroid: &[f64], sigma: f64, q: f64) -> f64 {
 /// `sigmas`: per-kernel σ, length = n
 /// `x`: query vector, length = D
 ///
-/// Returns Vec<f64> of length n. Extinct mask NOT applied — caller zeroes extinct indices.
+/// Returns `Vec<f64>` of length n. Extinct mask NOT applied — caller zeroes extinct indices.
 #[cfg(feature = "simd")]
 pub fn batch_gaussian_simd(centroids: &[f64], sigmas: &[f64], x: &[f64]) -> Vec<f64> {
     use wide::f64x4;

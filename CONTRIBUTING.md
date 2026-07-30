@@ -97,15 +97,16 @@ Hotfixes branch from the relevant tag and merge back to `main`.
 ### Pre-release checklist
 
 - [ ] All tests pass: `cargo test --workspace`
+- [ ] All tests pass (simd): `cargo test --workspace --features sokm-kernel/simd`
 - [ ] Doc tests pass: `cargo test --workspace --doc`
 - [ ] Formatted: `cargo fmt --all -- --check`
-- [ ] No lint issues: `cargo clippy --all-targets -- -D warnings`
+- [ ] No lint issues: `cargo clippy --all-targets --all-features -- -D warnings`
 - [ ] Deny clean: `cargo deny check`
 - [ ] Release build clean: `cargo build --workspace --release --locked`
-- [ ] Bench compiles: `cargo bench --workspace --no-run`
+- [ ] Bench compiles: `cargo bench --workspace --all-features --no-run`
 - [ ] Dry-run publish: `cargo release --dry-run` (publishes `sokm` then `sokm-kernel`)
 - [ ] `CHANGELOG.md` section dated and complete
-- [ ] Public types have `///` rustdoc; `cargo doc --workspace --no-deps` zero warnings
+- [ ] Public types have `///` rustdoc; `cargo doc --workspace --no-deps --all-features` zero warnings
 - [ ] Version bumped in workspace `Cargo.toml`, `Cargo.lock` updated
 
 ### Tagging and publishing

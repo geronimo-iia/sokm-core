@@ -1,8 +1,3 @@
-#[cfg(feature = "serde")]
-fn default_label_inherit_threshold() -> u32 {
-    u32::MAX
-}
-
 /// Kernel layer configuration. Param names map to Hoya equation references.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -28,20 +23,6 @@ pub struct KernelConfig {
     pub label_inherit_threshold: u32,
 }
 
-impl Default for KernelConfig {
-    fn default() -> Self {
-        Self {
-            theta_k: 0.1,
-            sigma_0: 1.0,
-            lambda: 0.7,
-            q: 2.67,
-            stm_capacity: 16,
-            p1_kernel: u64::MAX,
-            label_inherit_threshold: u32::MAX,
-        }
-    }
-}
-
 /// Validation error returned by [`KernelConfig::validate`].
 #[derive(Debug, thiserror::Error)]
 pub enum KernelConfigError {
@@ -55,6 +36,20 @@ pub enum KernelConfigError {
     InvalidQ(f64),
     #[error("stm_capacity must be > 0")]
     InvalidStmCapacity,
+}
+
+impl Default for KernelConfig {
+    fn default() -> Self {
+        Self {
+            theta_k: 0.1,
+            sigma_0: 1.0,
+            lambda: 0.7,
+            q: 2.67,
+            stm_capacity: 16,
+            p1_kernel: u64::MAX,
+            label_inherit_threshold: u32::MAX,
+        }
+    }
 }
 
 impl KernelConfig {
@@ -77,6 +72,11 @@ impl KernelConfig {
         }
         Ok(())
     }
+}
+
+#[cfg(feature = "serde")]
+fn default_label_inherit_threshold() -> u32 {
+    u32::MAX
 }
 
 #[cfg(test)]
