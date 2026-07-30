@@ -14,8 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CrossStore` trait, `CrossEdgeStore`: HashMap-backed directed bipartite edge store
 - `cross_propagate_soft`, `cross_propagate_soft_reverse`, `cross_strengthen_deltas`: free-function primitives
 - Cross-modal invariants (#8–#10), equations, and integration decision doc in `docs/`
-- Criterion benchmarks: `gestalt_tick_sparse` (SparseEdgeStore), `recall_simd` (simd feature), all parametrized over `(n,d)` pairs including 358d
+- Criterion benchmarks: `gestalt_tick_sparse` (SparseEdgeStore), `gestalt_tick_no_class_match`, `compact_reindex` (extinction fraction vs reindex cost), `recall_simd` (simd feature), all parametrized over `(n,d)` pairs including 358d
 - `examples/convergence.rs`: 2-class cross-modal convergence validation (500 ticks)
+- `examples/compact_lifecycle.rs`: extinct kernel pruning, reindex, and post-compact recall verification
+- `examples/memory_footprint.rs`: analytical `CrossEdgeStore` memory estimate at 1k–500k edges
+- `docs/decisions/0.3.0/`: four decision docs — sources-reverse-index, simd-not-recommended, compact-call-timing, two-modality-scope
 
 ### Changed
 - Workspace version bumped to `0.3.0`
