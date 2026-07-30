@@ -6,6 +6,8 @@ Core primitives for SOKM (Self-Organizing Kernel Memory) — incremental associa
 [![crates.io sokm](https://img.shields.io/crates/v/sokm.svg)](https://crates.io/crates/sokm)
 [![crates.io sokm-kernel](https://img.shields.io/crates/v/sokm-kernel.svg)](https://crates.io/crates/sokm-kernel)
 [![crates.io sokm-emotion](https://img.shields.io/crates/v/sokm-emotion.svg)](https://crates.io/crates/sokm-emotion)
+[![sokm-multimodal crates.io](https://img.shields.io/crates/v/sokm-multimodal.svg)](https://crates.io/crates/sokm-multimodal)
+[![sokm-multimodal docs.rs](https://docs.rs/sokm-multimodal/badge.svg)](https://docs.rs/sokm-multimodal)
 [![docs.rs sokm](https://docs.rs/sokm/badge.svg)](https://docs.rs/sokm)
 [![docs.rs sokm-kernel](https://docs.rs/sokm-kernel/badge.svg)](https://docs.rs/sokm-kernel)
 [![docs.rs sokm-emotion](https://docs.rs/sokm-emotion/badge.svg)](https://docs.rs/sokm-emotion)
@@ -80,8 +82,9 @@ If you have a fixed dataset and a training budget, a neural net will outperform 
 | [`sokm`](crates/sokm/) | Hebbian link layer — decay, strengthen, prune, propagate |
 | [`sokm-kernel`](crates/sokm-kernel/) | Kernel layer — activation, growth, STM, KernelGraph |
 | [`sokm-emotion`](crates/sokm-emotion/) | Emotion layer — per-kernel vars, global (E₁,E₂) state, attentive condition |
+| [`sokm-multimodal`](crates/sokm-multimodal) | Gestalt K³ cross-modal memory — two SOKM modalities coupled via directed bipartite cross-edge store |
 
-Upper layers — multimodal, episodic memory — are built on top of these primitives and live elsewhere.
+Upper layers — episodic memory — are built on top of these primitives and live elsewhere.
 
 ## Documentation
 
@@ -95,7 +98,8 @@ Upper layers — multimodal, episodic memory — are built on top of these primi
 [dependencies]
 sokm = "0.2"
 sokm-kernel = "0.2"
-sokm-emotion = "0.2"   # optional — emotion layer
+sokm-emotion = "0.2"        # optional — emotion layer
+sokm-multimodal = "0.3"     # optional — cross-modal Gestalt K³ memory
 ```
 
 **Kernel layer** — grow and activate kernels:
