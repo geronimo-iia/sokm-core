@@ -5,7 +5,7 @@
 
 ## Context
 
-sokm-multimodal exists in a separate repository (sokm-rs). It implements Gestalt K³ —
+sokm-multimodal exists in a separate unpublished repository. It implements Gestalt K³ —
 two SOKM modalities coupled via a directed bipartite cross-edge store. The implementation
 follows Hoya Eqs. 4.1, 4.3, 4.7 applied cross-modally ([INFERRED] — not verbatim Hoya).
 
@@ -17,8 +17,7 @@ Copy the crate as-is into sokm-core. No logic changes. Rename `AosGestaltGraph` 
 ## Limitations acknowledged at integration time
 
 - `CrossEdgeStore::sources()` is O(E) full scan. Acceptable at current scale.
-  See `.claude/note-sources-o-e-reverse-scan.md`.
-- No benchmarks at scale. See `.claude/note-no-benchmark-no-large-scale.md`.
+- No benchmarks at scale.
 
 ## Consequences
 
