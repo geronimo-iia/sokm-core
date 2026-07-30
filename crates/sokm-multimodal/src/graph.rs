@@ -193,14 +193,14 @@ where
     }
 }
 
-pub type AosGestaltGraph = GestaltKernelGraph<
+pub type DefaultGestaltGraph = GestaltKernelGraph<
     HashEdgeStore<usize>,
     HashEdgeStore<usize>,
     DefaultKernelStore,
     DefaultKernelStore,
 >;
 
-impl Default for AosGestaltGraph {
+impl Default for DefaultGestaltGraph {
     fn default() -> Self {
         Self::new(
             HashEdgeStore::new(),
@@ -220,7 +220,7 @@ mod tests {
 
     #[test]
     fn gestalt_tick_grows_both_modalities_on_novel_input() {
-        let mut g: AosGestaltGraph = GestaltKernelGraph::new(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -232,7 +232,7 @@ mod tests {
 
     #[test]
     fn gestalt_tick_no_growth_on_familiar_input() {
-        let mut g: AosGestaltGraph = GestaltKernelGraph::new(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -249,7 +249,7 @@ mod tests {
 
     #[test]
     fn gestalt_tick_strengthens_cross_modal_edge_on_coactivation() {
-        let mut g: AosGestaltGraph = GestaltKernelGraph::new(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -311,7 +311,7 @@ mod tests {
 
     #[test]
     fn recall_from_modal1_returns_modal2_activations() {
-        let mut g: AosGestaltGraph = GestaltKernelGraph::new(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -326,7 +326,7 @@ mod tests {
 
     #[test]
     fn recall_from_modal1_zero_without_cross_edge() {
-        let g: AosGestaltGraph = GestaltKernelGraph::new(
+        let g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -338,7 +338,7 @@ mod tests {
 
     #[test]
     fn recall_from_modal2_symmetric() {
-        let mut g: AosGestaltGraph = GestaltKernelGraph::new(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -355,7 +355,7 @@ mod tests {
 
     #[test]
     fn cross_modal_imagery_without_modal2_input() {
-        let mut g: AosGestaltGraph = GestaltKernelGraph::new(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -373,7 +373,7 @@ mod tests {
 
     #[test]
     fn gestalt_compact_reindexes_cross_edges() {
-        let mut g: AosGestaltGraph = GestaltKernelGraph::new(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -395,7 +395,7 @@ mod tests {
         k1.push(&[0.0, 1.0], 1.0, Some(1));
         let mut k2 = DefaultKernelStore::default();
         k2.push(&[0.0, 1.0], 1.0, Some(1));
-        let mut g: AosGestaltGraph = GestaltKernelGraph::with_stores(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::with_stores(
             HashEdgeStore::new(),
             k1,
             HashEdgeStore::new(),
@@ -442,7 +442,7 @@ mod tests {
 
     #[test]
     fn class_none_no_cross_edges_created() {
-        let mut g: AosGestaltGraph = GestaltKernelGraph::new(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -461,7 +461,7 @@ mod tests {
         k1.push(&[1.0, 0.0], 1.0, Some(1));
         let mut k2 = DefaultKernelStore::default();
         k2.push(&[0.0, 1.0], 1.0, Some(2));
-        let mut g: AosGestaltGraph = GestaltKernelGraph::with_stores(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::with_stores(
             HashEdgeStore::new(),
             k1,
             HashEdgeStore::new(),
@@ -481,7 +481,7 @@ mod tests {
 
     #[test]
     fn cross_pruned_via_weight_decay() {
-        let mut g: AosGestaltGraph = GestaltKernelGraph::new(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -522,7 +522,7 @@ mod tests {
             },
             ..GestaltConfig::default()
         };
-        let mut g: AosGestaltGraph = GestaltKernelGraph::with_stores(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::with_stores(
             HashEdgeStore::new(),
             k1,
             HashEdgeStore::new(),
@@ -550,7 +550,7 @@ mod tests {
 
     #[test]
     fn compact_no_extinct_cross_edges_survive() {
-        let mut g: AosGestaltGraph = GestaltKernelGraph::new(
+        let mut g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -568,7 +568,7 @@ mod tests {
 
     #[test]
     fn recall_empty_graph_no_panic() {
-        let g: AosGestaltGraph = GestaltKernelGraph::new(
+        let g: DefaultGestaltGraph = GestaltKernelGraph::new(
             HashEdgeStore::new(),
             HashEdgeStore::new(),
             &GestaltConfig::default(),
@@ -583,9 +583,9 @@ mod tests {
     #[test]
     fn new_and_with_stores_equivalence() {
         let cfg = GestaltConfig::default();
-        let g1: AosGestaltGraph =
+        let g1: DefaultGestaltGraph =
             GestaltKernelGraph::new(HashEdgeStore::new(), HashEdgeStore::new(), &cfg);
-        let g2: AosGestaltGraph = GestaltKernelGraph::with_stores(
+        let g2: DefaultGestaltGraph = GestaltKernelGraph::with_stores(
             HashEdgeStore::new(),
             DefaultKernelStore::default(),
             HashEdgeStore::new(),
@@ -601,13 +601,13 @@ mod tests {
     #[test]
     fn serde_roundtrip_and_tick() {
         let cfg = GestaltConfig::default();
-        let mut g: AosGestaltGraph =
+        let mut g: DefaultGestaltGraph =
             GestaltKernelGraph::new(HashEdgeStore::new(), HashEdgeStore::new(), &cfg);
         for t in 0..3u64 {
             g.tick(&[1.0, 0.0], &[0.0, 1.0], Some(1), t, &cfg, DecayMode::Apply);
         }
         let bytes = rmp_serde::to_vec(&g).unwrap();
-        let mut g2: AosGestaltGraph = rmp_serde::from_slice(&bytes).unwrap();
+        let mut g2: DefaultGestaltGraph = rmp_serde::from_slice(&bytes).unwrap();
         assert_eq!(g2.cross_edge_count(), g.cross_edge_count());
         // Should continue ticking without panic
         g2.tick(&[1.0, 0.0], &[0.0, 1.0], Some(1), 3, &cfg, DecayMode::Apply);
@@ -618,7 +618,7 @@ mod tests {
     #[test]
     fn integration_train_compact_recall() {
         let cfg = GestaltConfig::default();
-        let mut g: AosGestaltGraph =
+        let mut g: DefaultGestaltGraph =
             GestaltKernelGraph::new(HashEdgeStore::new(), HashEdgeStore::new(), &cfg);
         // Train
         for t in 0..10u64 {
@@ -635,7 +635,7 @@ mod tests {
     #[test]
     fn integration_bidirectional_symmetry() {
         let cfg = GestaltConfig::default();
-        let mut g: AosGestaltGraph =
+        let mut g: DefaultGestaltGraph =
             GestaltKernelGraph::new(HashEdgeStore::new(), HashEdgeStore::new(), &cfg);
         for t in 0..10u64 {
             g.tick(&[1.0, 0.0], &[0.0, 1.0], Some(1), t, &cfg, DecayMode::Apply);
@@ -657,7 +657,7 @@ mod tests {
             },
             ..GestaltConfig::default()
         };
-        let mut g: AosGestaltGraph =
+        let mut g: DefaultGestaltGraph =
             GestaltKernelGraph::new(HashEdgeStore::new(), HashEdgeStore::new(), &cfg);
         // Create edges
         g.tick(&[1.0, 0.0], &[0.0, 1.0], Some(1), 0, &cfg, DecayMode::Apply);
@@ -673,7 +673,7 @@ mod tests {
         // Train class-1 pair many times; train class-2 pair fewer times.
         // Recall with class-1 cue should return class-1 modal2 result above class-2.
         let cfg = GestaltConfig::default();
-        let mut g: AosGestaltGraph =
+        let mut g: DefaultGestaltGraph =
             GestaltKernelGraph::new(HashEdgeStore::new(), HashEdgeStore::new(), &cfg);
 
         // class-1: modal1=[1,0] paired with modal2=[0,1]

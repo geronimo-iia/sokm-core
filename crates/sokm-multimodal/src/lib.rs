@@ -8,10 +8,10 @@
 //!
 //! ```
 //! use sokm::DecayMode;
-//! use sokm_multimodal::{AosGestaltGraph, GestaltConfig, GestaltKernelGraph};
+//! use sokm_multimodal::{DefaultGestaltGraph, GestaltConfig, GestaltKernelGraph};
 //!
 //! let cfg = GestaltConfig::default();
-//! let mut g = AosGestaltGraph::default();
+//! let mut g = DefaultGestaltGraph::default();
 //!
 //! // Train: pair auditory (modal1) with visual (modal2) under class 1.
 //! for t in 0..5u64 {
@@ -32,4 +32,4 @@ pub use cross::{
     CrossEdgeStore, CrossStore, cross_propagate_soft, cross_propagate_soft_reverse,
     cross_strengthen_deltas,
 };
-pub use graph::{AosGestaltGraph, GestaltKernelGraph, GestaltTickReport};
+pub use graph::{DefaultGestaltGraph, GestaltKernelGraph, GestaltTickReport};
