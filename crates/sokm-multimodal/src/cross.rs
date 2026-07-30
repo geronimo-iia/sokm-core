@@ -8,7 +8,7 @@ pub trait CrossStore {
     /// All modal2 targets reachable from modal1\[i\], with weights.
     fn targets(&self, i: usize) -> Vec<(usize, f64)>;
     /// All modal1 sources that reach modal2\[j\], with weights.
-    /// O(E) scan — no reverse index. Acceptable for current scale.
+    /// O(1) lookup via reverse index.
     fn sources(&self, j: usize) -> Vec<(usize, f64)>;
     /// Mark edge (i, j) as active at `tick`. `0` is the sentinel meaning "never touched".
     /// Calling `touch` on an edge that has no weight entry is a no-op (does not create the edge).
@@ -45,11 +45,12 @@ pub trait CrossStore {
 }
 
 /// Directed bipartite edge store (modal1 → modal2), HashMap-backed.
-/// O(1) get/set, O(E) sources scan.
+/// O(1) get/set, O(1) sources lookup via reverse index.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CrossEdgeStore {
     weights: std::collections::HashMap<(usize, usize), f64>,
     ticks: std::collections::HashMap<(usize, usize), u64>,
+    reverse: std::collections::HashMap<usize, Vec<usize>>,
 }
 
 impl CrossEdgeStore {
@@ -57,6 +58,7 @@ impl CrossEdgeStore {
         Self {
             weights: std::collections::HashMap::new(),
             ticks: std::collections::HashMap::new(),
+            reverse: std::collections::HashMap::new(),
         }
     }
 
@@ -90,10 +92,18 @@ impl CrossStore for CrossEdgeStore {
 
     fn set(&mut self, i: usize, j: usize, w: f64) {
         if w <= 0.0 {
-            self.weights.remove(&(i, j));
+            if self.weights.remove(&(i, j)).is_some() && let Some(sources) = self.reverse.get_mut(&j) {
+                sources.retain(|&s| s != i);
+                if sources.is_empty() {
+                    self.reverse.remove(&j);
+                }
+            }
             self.ticks.remove(&(i, j));
         } else {
-            self.weights.insert((i, j), w);
+            if self.weights.insert((i, j), w).is_none() {
+                // new edge — add to reverse index
+                self.reverse.entry(j).or_default().push(i);
+            }
         }
     }
 
@@ -106,11 +116,14 @@ impl CrossStore for CrossEdgeStore {
     }
 
     fn sources(&self, j: usize) -> Vec<(usize, f64)> {
-        self.weights
-            .iter()
-            .filter(|(key, _)| key.1 == j)
-            .map(|(key, &v)| (key.0, v))
-            .collect()
+        self.reverse
+            .get(&j)
+            .map(|srcs| {
+                srcs.iter()
+                    .filter_map(|&i| self.weights.get(&(i, j)).map(|&w| (i, w)))
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 
     fn touch(&mut self, i: usize, j: usize, tick: u64) {
@@ -141,23 +154,29 @@ impl CrossStore for CrossEdgeStore {
                 *w = new_w;
             } else {
                 self.weights.insert((i, j), cfg.w_init);
+                self.reverse.entry(j).or_default().push(i);
             }
         }
     }
 
     fn prune_below(&mut self, threshold: f64) -> usize {
-        let before = self.weights.len();
         let to_remove: Vec<(usize, usize)> = self
             .weights
             .iter()
             .filter(|&(_, &v)| v < threshold)
             .map(|(&k, _)| k)
             .collect();
-        for k in &to_remove {
-            self.weights.remove(k);
-            self.ticks.remove(k);
+        for &(i, j) in &to_remove {
+            self.weights.remove(&(i, j));
+            self.ticks.remove(&(i, j));
+            if let Some(sources) = self.reverse.get_mut(&j) {
+                sources.retain(|&s| s != i);
+                if sources.is_empty() {
+                    self.reverse.remove(&j);
+                }
+            }
         }
-        before - self.weights.len()
+        to_remove.len()
     }
 
     fn prune_inactive(&mut self, current_tick: u64, p1: u64) -> usize {
@@ -171,9 +190,15 @@ impl CrossStore for CrossEdgeStore {
             .copied()
             .collect();
         let count = to_remove.len();
-        for k in &to_remove {
-            self.weights.remove(k);
-            self.ticks.remove(k);
+        for &(i, j) in &to_remove {
+            self.weights.remove(&(i, j));
+            self.ticks.remove(&(i, j));
+            if let Some(sources) = self.reverse.get_mut(&j) {
+                sources.retain(|&s| s != i);
+                if sources.is_empty() {
+                    self.reverse.remove(&j);
+                }
+            }
         }
         count
     }
@@ -181,12 +206,14 @@ impl CrossStore for CrossEdgeStore {
     fn reindex(&mut self, map1: &[Option<usize>], map2: &[Option<usize>]) {
         let old_weights: Vec<_> = self.weights.drain().collect();
         let old_ticks: Vec<_> = self.ticks.drain().collect();
+        self.reverse.clear();
 
         for ((old_i, old_j), w) in old_weights {
             let new_i = map1.get(old_i).and_then(|x| *x);
             let new_j = map2.get(old_j).and_then(|x| *x);
             if let (Some(ni), Some(nj)) = (new_i, new_j) {
                 self.weights.insert((ni, nj), w);
+                self.reverse.entry(nj).or_default().push(ni);
             }
         }
 
@@ -660,5 +687,38 @@ mod tests {
         store.reindex(&[None, Some(0)], &[Some(0)]);
         assert_eq!(store.edge_count(), 1);
         assert!((store.get(0, 0) - 0.5).abs() < 1e-9);
+    }
+
+    #[test]
+    fn reverse_index_consistent_after_prune() {
+        let mut s = CrossEdgeStore::new();
+        s.set(0, 1, 0.5);
+        s.set(1, 1, 0.3);
+        CrossStore::prune_below(&mut s, 0.4);
+        let srcs = CrossStore::sources(&s, 1);
+        assert_eq!(srcs.len(), 1);
+        assert_eq!(srcs[0].0, 0);
+    }
+
+    #[test]
+    fn reverse_index_consistent_after_set_zero() {
+        let mut s = CrossEdgeStore::new();
+        s.set(0, 1, 0.8);
+        s.set(0, 1, 0.0); // remove
+        let srcs = CrossStore::sources(&s, 1);
+        assert!(srcs.is_empty());
+    }
+
+    #[test]
+    fn reverse_index_consistent_after_reindex() {
+        let mut s = CrossEdgeStore::new();
+        s.set(0, 0, 1.0);
+        s.set(1, 0, 0.5);
+        // remove index 0 from modal1
+        s.reindex(&[None, Some(0)], &[Some(0)]);
+        // only old i=1→j=0 survives as (0,0)
+        let srcs = CrossStore::sources(&s, 0);
+        assert_eq!(srcs.len(), 1);
+        assert_eq!(srcs[0].0, 0);
     }
 }
