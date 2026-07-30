@@ -65,7 +65,7 @@ for (kernel_idx, score) in &results {
 | Feature | Default | Description |
 |---------|---------|-------------|
 | `serde` | off | `Serialize`/`Deserialize` for all public types |
-| `simd`  | off | SIMD scoring via `sokm-kernel/simd` |
+| `simd`  | off | SIMD scoring via `sokm-kernel/simd` — **not recommended**: the Rust compiler already applies automatic vectorisation at release optimisation level (LLVM); enabling this feature regresses `gestalt_tick` by 10–23% due to codegen layout changes with no measurable gain on recall. |
 
 ## CrossSokmConfig parameters
 
@@ -86,9 +86,21 @@ for (kernel_idx, score) in &results {
 cargo bench -p sokm-multimodal
 ```
 
-Covers `gestalt_tick`, `recall_from_modal1`, and `recall_from_modal2` at 100/500/1k kernels
-per modality. `recall_from_modal2` is the O(E) reverse-scan path — benchmark it before
-considering a reverse-index optimisation.
+Parametrized by `(n, d)` — kernel count × input dimension. Key numbers at n=1000:
+
+| bench | 16d | 358d |
+|-------|-----|------|
+| `gestalt_tick` | 92 µs | 912 µs |
+| `recall_from_modal1` | 5.6 µs | 210 µs |
+| `recall_from_modal2` | 5.4 µs | 210 µs |
+
+`recall_from_modal1` and `recall_from_modal2` are symmetric — `CrossEdgeStore` uses a reverse
+index (O(1) `sources()` lookup), so reverse recall does not scan all edges.
+
+Additional bench groups:
+- `gestalt_tick_sparse` — `SparseEdgeStore` backend (~10–15% slower than Hash for this access pattern)
+- `gestalt_tick_no_class_match` — `require_class_match=false` path (no measurable difference at same label set)
+- `compact_reindex` — reindex cost vs extinction fraction; scales with survivors, not total edges
 
 ## Examples
 
@@ -99,20 +111,74 @@ cargo run -p sokm-multimodal --example convergence
 Trains two 4D class clusters (class 0: A1↔A2, class 1: B1↔B2) for 500 ticks and verifies
 cross-modal recall separates the two classes in both directions.
 
+```text
+After 500 ticks:
+  modal1 kernels: 2
+  modal2 kernels: 2
+  cross edges:    2          ← exactly one edge per class pair
+
+recall_from_modal1(A1 cue):
+  modal2 kernel[0] score=0.8910   ← correct class-0 target dominates
+  modal2 kernel[1] score=0.1206
+
+recall_from_modal1(B1 cue):
+  modal2 kernel[1] score=0.8910   ← correct class-1 target dominates
+  modal2 kernel[0] score=0.1206
+
+recall_from_modal2(A2 cue):
+  modal1 kernel[0] score=0.8910   ← bidirectional: reverse recall also separates
+
+All convergence checks passed.
+```
+
+```bash
+cargo run -p sokm-multimodal --example compact_lifecycle
+```
+
+Shows the full `compact()` lifecycle: grow kernels → let them age out → compact → verify recall
+still works → continue training.
+
+```text
+=== Phase 1: grow class-1 kernels (ticks 0–19) ===
+  m1_kernels=20 m2_kernels=20 cross_edges=20   ← one kernel + one edge per novel input
+
+=== Phase 2: age out class-1 kernels (ticks 20–34) ===
+  m1_kernels=21 m2_kernels=21 cross_edges=21   ← class-2 kernel added; class-1 inactive
+
+=== compact() ===
+  pruned: modal1=20 modal2=20                  ← 20 extinct kernels removed from each modality
+  m1_kernels=1 m2_kernels=1 cross_edges=1      ← only the live class-2 kernel survives
+
+=== recall after compact() ===
+  modal1→modal2 results: 1                     ← recall works; indices remapped internally
+
+=== Phase 3: continue training (ticks 35–44) ===
+  m1_kernels=1 m2_kernels=1 cross_edges=1
+
+All checks passed.
+```
+
 ```bash
 cargo run -p sokm-multimodal --example kernel_count
 ```
 
-Reports actual kernel counts vs tick counts at varying scales — useful for calibrating bench fixtures.
+Reports actual kernel counts and cross-edge counts vs tick count — useful for calibrating bench
+fixtures and understanding cross-edge saturation under decay.
 
-## Crate map
+```text
+ticks=  100: modal1_kernels=  100 modal2_kernels=  100 cross_edges=  100
+ticks=  500: modal1_kernels=  500 modal2_kernels=  500 cross_edges=  460
+ticks= 1000: modal1_kernels= 1000 modal2_kernels= 1000 cross_edges=  460
+ticks= 2000: modal1_kernels= 2000 modal2_kernels= 2000 cross_edges=  460
+                                                        ↑ saturates ~460 — decay prunes faster
+                                                          than new edges form beyond this density
+```
 
+```bash
+cargo run -p sokm-multimodal --example memory_footprint
 ```
-sokm              ← link layer                              [sokm-core]
-sokm-kernel       ← kernel units, growth, STM               [sokm-core]
-sokm-emotion      ← per-kernel emotion variables, global state [sokm-core]
-sokm-multimodal   ← Gestalt K³ cross-modal memory (this crate) [sokm-core]
-```
+
+Analytical `CrossEdgeStore` memory estimate at 1k/10k/100k/500k edges (~99 bytes/edge).
 
 ## API
 
@@ -123,7 +189,7 @@ sokm-multimodal   ← Gestalt K³ cross-modal memory (this crate) [sokm-core]
 | `GestaltKernelGraph::tick(x1, x2, class, t, &cfg, decay)` | One learning step: both modalities tick, cross edges strengthen/decay/prune. Returns `GestaltTickReport` |
 | `GestaltTickReport` | `modal1: KernelTickReport`, `modal2: KernelTickReport`, `cross_strengthened: usize`, `cross_pruned: usize` |
 | `GestaltKernelGraph::recall_from_modal1(x1, &cfg)` | Score all modal2 kernels from a modal1 cue via cross edges |
-| `GestaltKernelGraph::recall_from_modal2(x2, &cfg)` | Score all modal1 kernels from a modal2 cue (O(E) sources scan) |
+| `GestaltKernelGraph::recall_from_modal2(x2, &cfg)` | Score all modal1 kernels from a modal2 cue via O(1) reverse index |
 | `GestaltKernelGraph::compact()` | Prune extinct kernels in both modalities; reindex cross edges. Returns `(pruned1, pruned2)` |
 | `GestaltKernelGraph::cross_edge_count()` | Current number of active cross-modal edges |
 | `GestaltConfig` | Bundles `sokm: SokmConfig`, `kernel: KernelConfig`, `cross: CrossSokmConfig` |

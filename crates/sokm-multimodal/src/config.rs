@@ -131,6 +131,9 @@ mod tests {
     fn gestalt_config_invalid_cross_propagates() {
         let mut cfg = GestaltConfig::default();
         cfg.cross.gamma = 0.0;
-        assert!(matches!(cfg.validate(), Err(CrossConfigError::InvalidGamma(_))));
+        assert!(matches!(
+            cfg.validate(),
+            Err(CrossConfigError::InvalidGamma(_))
+        ));
     }
 }

@@ -92,7 +92,9 @@ impl CrossStore for CrossEdgeStore {
 
     fn set(&mut self, i: usize, j: usize, w: f64) {
         if w <= 0.0 {
-            if self.weights.remove(&(i, j)).is_some() && let Some(sources) = self.reverse.get_mut(&j) {
+            if self.weights.remove(&(i, j)).is_some()
+                && let Some(sources) = self.reverse.get_mut(&j)
+            {
                 sources.retain(|&s| s != i);
                 if sources.is_empty() {
                     self.reverse.remove(&j);
