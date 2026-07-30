@@ -121,6 +121,8 @@ where
 
         self.cross.strengthen(&deltas, &cfg.cross, current_tick);
 
+        // Decay applies to all edges including those born this tick [Hoya Eq. 4.1 — no birth exemption].
+        // With aggressive xi + low w_init, a new edge can be pruned on its creation tick.
         let cross_decay_factor = (-cfg.cross.xi).exp();
         self.cross.scale_all(cross_decay_factor);
 

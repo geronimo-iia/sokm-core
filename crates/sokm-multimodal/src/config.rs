@@ -11,6 +11,8 @@ pub struct GestaltConfig {
 impl GestaltConfig {
     /// Validate all sub-configs. Returns first error encountered.
     pub fn validate(&self) -> Result<(), CrossConfigError> {
+        self.sokm.validate().map_err(CrossConfigError::Sokm)?;
+        self.kernel.validate().map_err(CrossConfigError::Kernel)?;
         self.cross.validate()
     }
 }
@@ -70,9 +72,13 @@ impl CrossSokmConfig {
     }
 }
 
-/// Validation errors for [`CrossSokmConfig`].
+/// Validation errors for [`GestaltConfig`] and [`CrossSokmConfig`].
 #[derive(Debug, thiserror::Error)]
 pub enum CrossConfigError {
+    #[error("sokm config invalid: {0}")]
+    Sokm(#[from] sokm::SokmConfigError),
+    #[error("kernel config invalid: {0}")]
+    Kernel(#[from] sokm_kernel::KernelConfigError),
     #[error("gamma must be > 0.0, got {0}")]
     InvalidGamma(f64),
     #[error("xi must be >= 0.0, got {0}")]
@@ -95,5 +101,36 @@ impl Default for CrossSokmConfig {
             p1: u64::MAX,
             require_class_match: true,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn gestalt_config_default_valid() {
+        assert!(GestaltConfig::default().validate().is_ok());
+    }
+
+    #[test]
+    fn gestalt_config_invalid_sokm_propagates() {
+        let mut cfg = GestaltConfig::default();
+        cfg.sokm.xi = -1.0;
+        assert!(matches!(cfg.validate(), Err(CrossConfigError::Sokm(_))));
+    }
+
+    #[test]
+    fn gestalt_config_invalid_kernel_propagates() {
+        let mut cfg = GestaltConfig::default();
+        cfg.kernel.theta_k = -1.0;
+        assert!(matches!(cfg.validate(), Err(CrossConfigError::Kernel(_))));
+    }
+
+    #[test]
+    fn gestalt_config_invalid_cross_propagates() {
+        let mut cfg = GestaltConfig::default();
+        cfg.cross.gamma = 0.0;
+        assert!(matches!(cfg.validate(), Err(CrossConfigError::InvalidGamma(_))));
     }
 }

@@ -1,5 +1,5 @@
 use sokm::{DecayMode, HashEdgeStore};
-use sokm_multimodal::{DefaultGestaltGraph, GestaltConfig, GestaltKernelGraph};
+use sokm_multimodal::{DefaultGestaltGraph, GestaltConfig};
 
 /// Inspect how many kernels actually grow at different tick counts.
 /// Useful for calibrating bench fixture size — growth saturates when inputs
